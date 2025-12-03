@@ -444,7 +444,6 @@
                 this.state.currentSet = 1;
                 this.state.paused = false;
                 
-                // CORRECTION 1: Réinitialisation forcée du bouton PAUSE
                 const btnPause = document.getElementById('btn-pause-toggle');
                 if(btnPause) {
                     btnPause.innerText = "PAUSE";
@@ -460,7 +459,6 @@
             },
 
             setPhase: function(phase) {
-                // Ignore skip logic if duration is 0, just go next immediately
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
                 if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
@@ -480,6 +478,9 @@
                     this.state.timeLeft = 5; this.state.totalTime = 5;
                     phaseLabel.innerText = "PRÉPAREZ-VOUS"; phaseLabel.className = "text-3xl font-bold uppercase text-blue-400";
                     display.classList.add('text-white');
+                    // CORRECTION: On force le sous-texte à "ATTENTION" ou "PRÊT ?" au lieu de garder le texte précédent
+                    subDisplay.innerText = "ATTENTION";
+                    
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
                     this.runTimer();
                 }
@@ -522,7 +523,6 @@
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
                         AudioEngine.beepHigh(); 
                     } else {
-                        // CORRECTION 2: Texte raccourci "RÉCUP." pour éviter le dépassement
                         phaseLabel.innerText = "RÉCUP."; 
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
                         subDisplay.innerText = "RÉCUP.";
@@ -553,7 +553,7 @@
                     if (this.state.timeLeft === 0) {
                          this.nextPhase();
                     } else {
-                        if (this.state.timeLeft > 0 && this.state.timeLeft <= 3) AudioEngine.beepLow();
+                        // CORRECTION: Suppression des bips 3-2-1
                         this.updateTimerDisplay();
                     }
                 }, 1000);

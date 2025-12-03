@@ -295,7 +295,7 @@
                     FINI > REPOS
                 </button>
                 <div id="controls-standard" class="flex gap-2 w-full">
-                    <button onclick="app.togglePause()" class="btn-tactical flex-1 py-8 text-2xl bg-gray-800/90 border-gray-600">PAUSE</button>
+                    <button id="btn-pause-toggle" onclick="app.togglePause()" class="btn-tactical flex-1 py-8 text-2xl bg-gray-800/90 border-gray-600">PAUSE</button>
                 </div>
             </div>
 
@@ -400,7 +400,6 @@
                         controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
                     }
                 } else if (this.state.config.type === 'manual') {
-                    // CORRECTION: Ajout des inputs pour la Méthode X (Manuel)
                     controls.innerHTML += createInput("REPOS (s)", 'rest', this.state.config.rest, 5);
                     controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
                 }
@@ -444,6 +443,15 @@
                 WakeLock.request();
                 this.state.currentSet = 1;
                 this.state.paused = false;
+                
+                // CORRECTION 1: Réinitialisation forcée du bouton PAUSE
+                const btnPause = document.getElementById('btn-pause-toggle');
+                if(btnPause) {
+                    btnPause.innerText = "PAUSE";
+                    btnPause.classList.remove('bg-yellow-600');
+                    btnPause.classList.add('bg-gray-800/90');
+                }
+
                 this.showScreen('screen-timer');
                 this.setupVisualizer();
 
@@ -512,12 +520,13 @@
                         phaseLabel.innerText = "EXPIRER"; 
                         subDisplay.innerText = "EXPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
-                        AudioEngine.beepHigh(); // Son apaisant (bip court)
+                        AudioEngine.beepHigh(); 
                     } else {
-                        // CORRECTION TEXTE: Remplacement de "RESPIRER" par "RÉCUPÉRATION"
-                        phaseLabel.innerText = "RÉCUPÉRATION"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
-                        subDisplay.innerText = "RÉCUPÉRATION";
-                        AudioEngine.buzzer(); // Son fort
+                        // CORRECTION 2: Texte raccourci "RÉCUP." pour éviter le dépassement
+                        phaseLabel.innerText = "RÉCUP."; 
+                        phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
+                        subDisplay.innerText = "RÉCUP.";
+                        AudioEngine.buzzer(); 
                     }
                     display.classList.add('text-neon-alert'); 
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
@@ -582,9 +591,11 @@
             handleAction: function() { if (this.state.phase === 'manual_work') this.nextPhase(); },
             togglePause: function() {
                 this.state.paused = !this.state.paused;
-                const btn = document.querySelector('#controls-standard button');
-                btn.innerText = this.state.paused ? "REPRENDRE" : "PAUSE";
-                btn.classList.toggle('bg-yellow-600');
+                const btn = document.getElementById('btn-pause-toggle');
+                if(btn) {
+                    btn.innerText = this.state.paused ? "REPRENDRE" : "PAUSE";
+                    btn.classList.toggle('bg-yellow-600');
+                }
             },
 
             quitWorkout: function() {

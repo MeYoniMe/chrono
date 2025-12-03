@@ -13,7 +13,6 @@
     <!-- Importation Police Tactique -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- 'Black Ops One' pour les titres et boutons principaux, 'Chakra Petch' pour le texte courant -->
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Chakra+Petch:wght@500;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS -->
@@ -36,10 +35,10 @@
             color: var(--color-white);
             font-family: var(--font-tactical);
             overflow: hidden;
-            height: 100vh; /* Force la hauteur à 100% de la vue */
+            height: 100vh;
             width: 100vw;
             user-select: none;
-            -webkit-user-select: none; /* Safari Touch */
+            -webkit-user-select: none;
             touch-action: manipulation;
         }
 
@@ -58,7 +57,6 @@
         .text-neon-volt { color: var(--color-volt); text-shadow: 0 0 15px rgba(204, 255, 0, 0.6); }
         .text-neon-alert { color: var(--color-alert); text-shadow: 0 0 15px rgba(255, 51, 51, 0.6); }
         
-        /* Police d'affichage principale (titres, boutons d'action) */
         .font-display { font-family: var(--font-display); letter-spacing: 2px; }
 
         /* --- UI ELEMENTS --- */
@@ -83,17 +81,16 @@
             color: #000;
             border: none;
             box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
-            font-family: var(--font-display); /* Utilise la police 'Black Ops One' */
+            font-family: var(--font-display);
         }
-        /* Bouton de fermeture 'X' */
         .btn-close {
             background: #4a0000;
             border: 2px solid #ff0000;
             color: #ffcccc;
             font-family: var(--font-display);
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
-            z-index: 50; /* S'assure qu'il est au-dessus */
-            cursor: pointer; /* Indique qu'il est cliquable */
+            z-index: 50;
+            cursor: pointer;
         }
 
         /* --- ANIMATIONS --- */
@@ -106,21 +103,18 @@
 
         .hidden-force { display: none !important; }
         
-        /* Signature 'By B.Y' fixe en haut à gauche */
         .watermark-fixed {
             position: fixed;
             top: 15px;
             left: 60px; 
             font-size: 14px;
-            /* Opacité réduite à 0.2 pour être très discret (demande utilisateur) */
             color: rgba(255, 255, 255, 0.2); 
             z-index: 9999;
-            font-family: var(--font-display); /* Police identique à ATTENTION */
+            font-family: var(--font-display);
             letter-spacing: 1px;
             pointer-events: none;
         }
 
-        /* Pied de page Copyright fixe en bas */
         .copyright-footer-fixed {
             position: fixed;
             bottom: 15px;
@@ -154,7 +148,6 @@
         <h1 class="text-4xl text-red-600 font-display mb-6 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">ATTENTION</h1>
         
         <div class="border border-red-900 bg-red-900/10 p-6 rounded-lg mb-4 w-full max-w-md">
-            <!-- Phrase RESTAURÉE du screenshot -->
             <p class="text-lg leading-relaxed mb-4 font-bold text-gray-200">
                 Cette application est conçue pour des entraînements INTENSIFS.
             </p>
@@ -168,12 +161,10 @@
             BY YONI BRD
         </div>
 
-        <!-- Bouton avec la police 'Black Ops One' -->
         <button onclick="app.acceptDisclaimer()" class="btn-tactical btn-action w-full max-w-md py-5 text-2xl rounded tracking-widest">
             J'ACCEPTE • ENTRER
         </button>
 
-        <!-- COPYRIGHT -->
         <div class="copyright-footer-fixed">
             Copyright © 2025 Yoni Brd. Tous droits réservés.<br>
             Code source protégé. Reproduction interdite.
@@ -220,7 +211,7 @@
                 <p class="text-xs text-gray-400">Reps libres. Repos strict.</p>
             </button>
 
-             <!-- Choix 4: CUSTOM -->
+             <!-- Choix 4: CUSTOM (Inversé avec Coherence) -->
              <button onclick="app.setupMode('custom')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-white text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">LIBRE</span>
@@ -228,11 +219,20 @@
                 </div>
                 <p class="text-xs text-gray-400">Personnalisation totale.</p>
             </button>
+
+            <!-- Choix 5: RETOUR AU CALME (ex-Coherence) -->
+            <button onclick="app.setupMode('coherence')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-purple-500 text-left">
+                <div class="flex justify-between w-full items-center mb-1">
+                    <span class="text-3xl text-white font-display">RETOUR AU CALME</span>
+                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">5s / 0s / 5s</span>
+                </div>
+                <p class="text-xs text-gray-400">Respiration apaisante. 5min.</p>
+            </button>
         </div>
     </div>
 
     <!-- ========================================= -->
-    <!-- ECRAN 3: SETUP (COMPACTÉ pour mobile)     -->
+    <!-- ECRAN 3: SETUP (REGLAGES)                 -->
     <!-- ========================================= -->
     <div id="screen-setup" class="w-full h-full flex flex-col p-3 hidden-force pt-10 max-w-md mx-auto pb-2 overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
@@ -240,7 +240,6 @@
             <h2 id="setup-title" class="text-xl font-display text-white text-right truncate ml-2">REGLAGES</h2>
         </div>
 
-        <!-- Zone de texte scientifique réduite -->
         <div class="bg-gray-900/80 p-3 rounded border border-gray-700 mb-2 shadow-lg shrink-0">
             <div class="flex items-center gap-2 mb-1 text-yellow-400 font-bold">
                 <span class="text-base">ℹ️</span> <span>LA SCIENCE</span>
@@ -250,13 +249,11 @@
             </p>
         </div>
 
-        <!-- Contrôles ULTRA COMPACTS -->
         <div id="setup-controls" class="space-y-2 mb-2 shrink-0">
             <!-- JS Inject -->
         </div>
 
-        <!-- Bouton GO fixé en bas -->
-        <div class="mt-auto w-full pt-2">
+        <div class="mt-4 w-full pt-2">
             <button onclick="app.startWorkout()" class="btn-tactical btn-action w-full py-5 text-4xl rounded-sm font-display tracking-widest text-black transform active:scale-95 transition-transform shadow-lg">
                 GO !
             </button>
@@ -279,19 +276,18 @@
         <!-- Contenu Central -->
         <div class="flex-1 flex flex-col items-center justify-between py-6 px-12 z-10 w-full max-w-2xl mx-auto">
             
-            <!-- Header: Phase + Bouton X -->
+            <!-- Header -->
             <div class="w-full flex justify-between items-start mt-2">
                 <div class="text-left">
                     <div id="timer-phase-label" class="text-3xl font-bold uppercase text-gray-400 tracking-wider">EFFORT</div>
                     <div id="timer-round-counter" class="text-xl text-white mt-1 font-mono">SERIE 1 / 8</div>
                 </div>
-                <!-- BOUTON X ROUGE -->
                 <button onclick="app.quitWorkout()" class="btn-close w-14 h-14 flex items-center justify-center text-3xl rounded shadow-lg active:scale-90 transition-transform font-bold" style="touch-action: manipulation;">
                     X
                 </button>
             </div>
 
-            <!-- Visualization des Séries -->
+            <!-- Visualizer -->
             <div id="reps-visualizer" class="flex gap-2 mt-6 w-full flex-wrap justify-center opacity-90"></div>
 
             <!-- LE TIMER -->
@@ -304,7 +300,7 @@
                 </div>
             </div>
 
-            <!-- Boutons Actions -->
+            <!-- Boutons -->
             <div class="w-full mb-4">
                 <button id="main-action-btn" onclick="app.handleAction()" class="btn-tactical w-full py-8 text-3xl bg-gray-800 border-gray-500 rounded hidden-force shadow-2xl font-display">
                     FINI > REPOS
@@ -358,7 +354,9 @@
             tabata: { name: "TABATA 20/10", desc: "Le protocole original. 20s effort, 10s repos. Améliore aérobie et anaérobie.", work: 20, rest: 10, sets: 8, type: 'interval' },
             boxing: { name: "SPARRING PRO", desc: "3 min combat, 1 min repos. Gestion de l'effort sur la durée.", work: 180, rest: 60, sets: 12, type: 'interval' },
             lafay: { name: "MÉTHODE X", desc: "Temps d'effort libre (vos reps), repos strict. Idéal pour la musculation au poids de corps.", work: 0, rest: 90, sets: 6, type: 'manual' },
-            custom: { name: "PERSONNALISÉ", desc: "Réglez vos temps. Mettez une valeur à 0 pour désactiver cette phase.", work: 30, rest: 30, sets: 5, type: 'interval' }
+            custom: { name: "PERSONNALISÉ", desc: "Réglez vos temps. Mettez une valeur à 0 pour désactiver cette phase.", work: 30, rest: 30, sets: 5, type: 'interval' },
+            // coherence renommé en RETOUR AU CALME + Ajout param 'hold'
+            coherence: { name: "RETOUR AU CALME", desc: "Respiration apaisante. 5s inspi / 5s expi. Apaise le système nerveux sur 5min.", work: 5, hold: 0, rest: 5, sets: 30, type: 'interval' }
         };
 
         const app = {
@@ -392,7 +390,6 @@
                 const controls = document.getElementById('setup-controls');
                 controls.innerHTML = ''; 
 
-                // Inputs COMPACTS
                 const createInput = (label, key, val, step) => `
                     <div class="flex justify-between items-center bg-gray-800 p-2 rounded border border-gray-600 shadow-md">
                         <label class="text-gray-200 font-bold text-sm">${label}</label>
@@ -404,10 +401,18 @@
                     </div>`;
 
                 if (this.state.config.type === 'interval') {
-                    controls.innerHTML += createInput("EFFORT (s)", 'work', this.state.config.work, 5);
+                    if(this.state.mode === 'coherence') {
+                        // REGLAGES SPECIFIQUES RETOUR AU CALME
+                        controls.innerHTML += createInput("INSPIRER (s)", 'work', this.state.config.work, 1);
+                        controls.innerHTML += createInput("MAINTENIR (s)", 'hold', this.state.config.hold, 1);
+                        controls.innerHTML += createInput("EXPIRER (s)", 'rest', this.state.config.rest, 1);
+                        controls.innerHTML += createInput("CYCLES", 'sets', this.state.config.sets, 5);
+                    } else {
+                        controls.innerHTML += createInput("EFFORT (s)", 'work', this.state.config.work, 5);
+                        controls.innerHTML += createInput("REPOS (s)", 'rest', this.state.config.rest, 5);
+                        controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
+                    }
                 }
-                controls.innerHTML += createInput("REPOS (s)", 'rest', this.state.config.rest, 5);
-                controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
 
                 this.showScreen('screen-setup');
             },
@@ -415,8 +420,12 @@
             adjustConfig: function(key, delta) {
                 let current = this.state.config[key];
                 let step = Math.abs(delta);
+                // Step securite
+                if(step === 1 && key !== 'sets' && this.state.mode !== 'coherence') step = 5; 
+
                 let newVal;
-                let min = (this.state.mode === 'custom' && key !== 'sets') ? 0 : 1; 
+                let min = (this.state.mode === 'custom' && key !== 'sets') ? 0 : 0; // Hold peut être 0
+                if (key === 'sets' || (key === 'work' && this.state.mode !== 'custom') || (key === 'rest' && this.state.mode !== 'custom')) min = 1;
 
                 if (delta > 0) {
                     if (current === 1 && step === 5) newVal = 5;
@@ -425,12 +434,13 @@
                     newVal = current - step;
                 }
 
-                if (step === 5 && newVal % 5 !== 0 && newVal !== 1 && newVal !== 0) {
+                if (this.state.mode !== 'coherence' && step === 5 && newVal % 5 !== 0 && newVal !== 1 && newVal !== 0) {
                     newVal = Math.round(newVal / 5) * 5;
                 }
                 
                 if (newVal < min) newVal = min;
                 
+                // Securité custom
                 if (this.state.mode === 'custom' && newVal === 0) {
                     if (key === 'work' && this.state.config.rest === 0) newVal = 5;
                     if (key === 'rest' && this.state.config.work === 0) newVal = 5;
@@ -453,8 +463,12 @@
             },
 
             setPhase: function(phase) {
+                // Skip logic
                 if (phase === 'work' && this.state.config.work === 0) {
                     this.state.phase = 'work'; this.nextPhase(); return;
+                }
+                if (phase === 'hold' && this.state.config.hold === 0) {
+                    this.state.phase = 'hold'; this.nextPhase(); return;
                 }
                 if (phase === 'rest' && this.state.config.rest === 0) {
                     this.state.phase = 'rest'; this.nextPhase(); return;
@@ -469,6 +483,7 @@
                 
                 document.body.style.backgroundColor = '#000';
                 display.className = "font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl";
+                display.classList.remove('text-white', 'text-neon-volt', 'text-neon-alert'); // Reset colors
                 
                 if (phase === 'get_ready') {
                     this.state.timeLeft = 5; this.state.totalTime = 5;
@@ -479,9 +494,27 @@
                 }
                 else if (phase === 'work') {
                     this.state.timeLeft = this.state.config.work; this.state.totalTime = this.state.config.work;
-                    phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
-                    display.classList.add('text-neon-volt'); subDisplay.innerText = "TRAVAIL";
+                    if(this.state.mode === 'coherence') {
+                        phaseLabel.innerText = "INSPIRER"; // Reste INSPIRER
+                        subDisplay.innerText = "INSPIRER"; // Demande: remplacer gonfler par inspirer
+                        phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                    } else {
+                        phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                        subDisplay.innerText = "TRAVAIL";
+                    }
+                    display.classList.add('text-neon-volt'); 
                     AudioEngine.beepHigh();
+                    mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    this.runTimer();
+                }
+                else if (phase === 'hold') {
+                    // NOUVELLE PHASE MAINTENIR
+                    this.state.timeLeft = this.state.config.hold; this.state.totalTime = this.state.config.hold;
+                    phaseLabel.innerText = "MAINTENIR"; 
+                    phaseLabel.className = "text-3xl font-bold uppercase text-white";
+                    subDisplay.innerText = "BLOCAGE";
+                    display.classList.add('text-white');
+                    // Pas de son ou son discret
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
                     this.runTimer();
                 }
@@ -494,8 +527,15 @@
                 }
                 else if (phase === 'rest') {
                     this.state.timeLeft = this.state.config.rest; this.state.totalTime = this.state.config.rest;
-                    phaseLabel.innerText = "RÉCUPÉRATION"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
-                    display.classList.add('text-neon-alert'); subDisplay.innerText = "RESPIRER";
+                    if(this.state.mode === 'coherence') {
+                        phaseLabel.innerText = "EXPIRER"; 
+                        subDisplay.innerText = "EXPIRER"; // Demande: remplacer vider par expirer
+                        phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
+                    } else {
+                        phaseLabel.innerText = "RÉCUPÉRATION"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
+                        subDisplay.innerText = "RESPIRER";
+                    }
+                    display.classList.add('text-neon-alert'); 
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
                     document.body.classList.add('animate-alert');
                     AudioEngine.buzzer(); this.runTimer();
@@ -534,7 +574,15 @@
                     if (conf.type === 'manual') this.setPhase('manual_work');
                     else this.setPhase('work');
                 }
-                else if (this.state.phase === 'work' || this.state.phase === 'manual_work') this.setPhase('rest');
+                else if (this.state.phase === 'work') {
+                    // Apres effort, on va vers Hold (si dispo) sinon Rest
+                    this.setPhase('hold');
+                }
+                else if (this.state.phase === 'hold') {
+                    // Apres hold, on expire (rest)
+                    this.setPhase('rest');
+                }
+                else if (this.state.phase === 'manual_work') this.setPhase('rest');
                 else if (this.state.phase === 'rest') {
                     if (this.state.currentSet < conf.sets) {
                         this.state.currentSet++;
@@ -576,7 +624,12 @@
 
                 if (this.state.totalTime > 0) {
                     const percentage = (this.state.timeLeft / this.state.totalTime) * 100;
-                    const barColor = this.state.phase === 'rest' ? 'var(--color-alert)' : (this.state.phase === 'get_ready' ? '#fff' : 'var(--color-volt)');
+                    let barColor;
+                    if (this.state.phase === 'rest') barColor = 'var(--color-alert)';
+                    else if (this.state.phase === 'hold') barColor = 'white';
+                    else if (this.state.phase === 'get_ready') barColor = '#fff';
+                    else barColor = 'var(--color-volt)';
+
                     document.getElementById('visual-bar-left').style.height = `${percentage}%`;
                     document.getElementById('visual-bar-right').style.height = `${percentage}%`;
                     document.getElementById('visual-bar-left').style.backgroundColor = barColor;
@@ -587,21 +640,26 @@
             setupVisualizer: function() {
                 const container = document.getElementById('reps-visualizer');
                 container.innerHTML = '';
+                const isCompact = this.state.config.sets > 15;
                 for(let i=1; i<=this.state.config.sets; i++) {
                     const box = document.createElement('div');
-                    box.className = `w-8 h-8 border-2 border-gray-600 rounded-sm`;
+                    const sizeClass = isCompact ? 'w-4 h-4' : 'w-8 h-8';
+                    box.className = `${sizeClass} border-2 border-gray-600 rounded-sm`;
                     box.id = `rep-box-${i}`;
                     container.appendChild(box);
                 }
             },
 
             updateUI: function() {
+                const isCompact = this.state.config.sets > 15;
+                const sizeClass = isCompact ? 'w-4 h-4' : 'w-8 h-8';
+                
                 document.getElementById('timer-round-counter').innerText = `SÉRIE ${this.state.currentSet} / ${this.state.config.sets}`;
                 for(let i=1; i<=this.state.config.sets; i++) {
                     const box = document.getElementById(`rep-box-${i}`);
-                    if (i < this.state.currentSet) box.className = "w-8 h-8 bg-gray-600 rounded-sm opacity-50";
-                    else if (i === this.state.currentSet) box.className = "w-8 h-8 bg-white shadow-[0_0_15px_white] rounded-sm scale-110 transition-transform border-none";
-                    else box.className = "w-8 h-8 border-2 border-gray-700 bg-transparent rounded-sm";
+                    if (i < this.state.currentSet) box.className = `${sizeClass} bg-gray-600 rounded-sm opacity-50`;
+                    else if (i === this.state.currentSet) box.className = `${sizeClass} bg-white shadow-[0_0_15px_white] rounded-sm scale-110 transition-transform border-none`;
+                    else box.className = `${sizeClass} border-2 border-gray-700 bg-transparent rounded-sm`;
                 }
             }
         };
@@ -618,4 +676,3 @@
 </body>
 </html>
 <!-- © 2025 Yoni Brd — All Rights Reserved -->
-

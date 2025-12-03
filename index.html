@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IRON TIMER - Tactical Training</title>
+    <meta name="description" content="Application de chronométrage sportif haute visibilité.">
+    <!-- Configuration iOS Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Importation Police Tactique -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- 'Black Ops One' pour les titres et boutons principaux, 'Chakra Petch' pour le texte courant -->
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Chakra+Petch:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* --- CONFIGURATION GRAPHIQUE --- */
+        :root {
+            --color-kevlar: #1a1a1a;
+            --color-volt: #CCFF00;
+            --color-alert: #FF3333;
+            --color-rest: #00C2FF;
+            --color-white: #ffffff;
+            --font-tactical: 'Chakra Petch', sans-serif;
+            --font-display: 'Black Ops One', cursive;
+        }
+
+        body {
+            background-color: #0f0f0f;
+            color: var(--color-white);
+            font-family: var(--font-tactical);
+            overflow: hidden;
+            height: 100vh; /* Force la hauteur à 100% de la vue */
+            width: 100vw;
+            user-select: none;
+            -webkit-user-select: none; /* Safari Touch */
+            touch-action: manipulation;
+        }
+
+        /* Texture Kevlar */
+        .bg-kevlar {
+            background-color: #111;
+            background-image: 
+                linear-gradient(45deg, #1a1a1a 25%, transparent 25%, transparent 75%, #1a1a1a 75%, #1a1a1a),
+                linear-gradient(45deg, #1a1a1a 25%, transparent 25%, transparent 75%, #1a1a1a 75%, #1a1a1a);
+            background-size: 10px 10px;
+            background-position: 0 0, 5px 5px;
+            box-shadow: inset 0 0 100px #000;
+        }
+
+        /* --- TYPOGRAPHIE --- */
+        .text-neon-volt { color: var(--color-volt); text-shadow: 0 0 15px rgba(204, 255, 0, 0.6); }
+        .text-neon-alert { color: var(--color-alert); text-shadow: 0 0 15px rgba(255, 51, 51, 0.6); }
+        
+        /* Police d'affichage principale (titres, boutons d'action) */
+        .font-display { font-family: var(--font-display); letter-spacing: 2px; }
+
+        /* --- UI ELEMENTS --- */
+        .btn-tactical {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .btn-tactical:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .btn-action {
+            background: var(--color-volt);
+            color: #000;
+            border: none;
+            box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
+            font-family: var(--font-display); /* Utilise la police 'Black Ops One' */
+        }
+        /* Bouton de fermeture 'X' */
+        .btn-close {
+            background: #4a0000;
+            border: 2px solid #ff0000;
+            color: #ffcccc;
+            font-family: var(--font-display);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+            z-index: 50; /* S'assure qu'il est au-dessus */
+            cursor: pointer; /* Indique qu'il est cliquable */
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse-red {
+            0% { box-shadow: inset 0 0 0px #FF3333; }
+            50% { box-shadow: inset 0 0 80px #FF3333; }
+            100% { box-shadow: inset 0 0 0px #FF3333; }
+        }
+        .animate-alert { animation: pulse-red 1s infinite; }
+
+        .hidden-force { display: none !important; }
+        
+        /* Signature 'By B.Y' fixe en haut à gauche */
+        .watermark-fixed {
+            position: fixed;
+            top: 15px;
+            left: 60px; 
+            font-size: 14px;
+            /* Opacité réduite à 0.2 pour être très discret (demande utilisateur) */
+            color: rgba(255, 255, 255, 0.2); 
+            z-index: 9999;
+            font-family: var(--font-display); /* Police identique à ATTENTION */
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        /* Pied de page Copyright fixe en bas */
+        .copyright-footer-fixed {
+            position: fixed;
+            bottom: 15px;
+            left: 0;
+            width: 100%;
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            font-family: sans-serif;
+            letter-spacing: 0.5px;
+            z-index: 9998;
+            pointer-events: none;
+            padding: 0 10px;
+        }
+    </style>
+</head>
+<body class="bg-kevlar flex flex-col items-center justify-center">
+
+    <!-- SIGNATURE PERMANENTE -->
+    <div class="watermark-fixed">By B.Y</div>
+
+    <!-- AUDIO HACK iOS -->
+    <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;">
+        <source src="data:audio/mp3;base64,//MkxAA........" type="audio/mpeg">
+    </audio>
+
+    <!-- ========================================= -->
+    <!-- ECRAN 1: DISCLAIMER (Avertissement)       -->
+    <!-- ========================================= -->
+    <div id="screen-disclaimer" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center">
+        <h1 class="text-4xl text-red-600 font-display mb-6 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">ATTENTION</h1>
+        
+        <div class="border border-red-900 bg-red-900/10 p-6 rounded-lg mb-4 w-full max-w-md">
+            <!-- Phrase RESTAURÉE du screenshot -->
+            <p class="text-lg leading-relaxed mb-4 font-bold text-gray-200">
+                Cette application est conçue pour des entraînements INTENSIFS.
+            </p>
+            <p class="text-sm text-gray-400 leading-relaxed">
+                L'auteur décline toute responsabilité en cas de blessure ou de malaise. 
+                Consultez un médecin avant de commencer un programme sportif.
+            </p>
+        </div>
+
+        <div class="mb-8 font-display text-gray-500 tracking-widest text-sm">
+            BY YONI BRD
+        </div>
+
+        <!-- Bouton avec la police 'Black Ops One' -->
+        <button onclick="app.acceptDisclaimer()" class="btn-tactical btn-action w-full max-w-md py-5 text-2xl rounded tracking-widest">
+            J'ACCEPTE • ENTRER
+        </button>
+
+        <!-- COPYRIGHT -->
+        <div class="copyright-footer-fixed">
+            Copyright © 2025 Yoni Brd. Tous droits réservés.<br>
+            Code source protégé. Reproduction interdite.
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- ECRAN 2: MENU PRINCIPAL                   -->
+    <!-- ========================================= -->
+    <div id="screen-menu" class="w-full h-full flex flex-col p-4 hidden-force pt-12">
+        
+        <!-- LOGO -->
+        <div class="flex justify-center items-center mb-6 mt-2 flex-col">
+            <h2 class="text-5xl font-display text-white tracking-widest drop-shadow-lg">IRON TIMER</h2>
+            <div class="text-[10px] text-gray-500 tracking-[0.6em] mt-2">TACTICAL TRAINING APP</div>
+        </div>
+        
+        <div class="grid grid-cols-1 gap-3 flex-1 overflow-y-auto pb-4 max-w-md mx-auto w-full">
+            
+            <!-- Choix 1: TABATA -->
+            <button onclick="app.setupMode('tabata')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-[var(--color-volt)] text-left">
+                <div class="flex justify-between w-full items-center mb-1">
+                    <span class="text-3xl text-white font-display">TABATA</span>
+                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">20s / 10s</span>
+                </div>
+                <p class="text-xs text-gray-400">Cardio Max. Brûle-graisse.</p>
+            </button>
+
+            <!-- Choix 2: BOXE -->
+            <button onclick="app.setupMode('boxing')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-red-600 text-left">
+                <div class="flex justify-between w-full items-center mb-1">
+                    <span class="text-3xl text-white font-display">SPARRING</span>
+                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">3min / 1min</span>
+                </div>
+                <p class="text-xs text-gray-400">Endurance combat & Souffle.</p>
+            </button>
+
+            <!-- Choix 3: METHODE X -->
+            <button onclick="app.setupMode('lafay')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-blue-500 text-left">
+                <div class="flex justify-between w-full items-center mb-1">
+                    <span class="text-3xl text-white font-display">MÉTHODE X</span>
+                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">Repos Fixe</span>
+                </div>
+                <p class="text-xs text-gray-400">Reps libres. Repos strict.</p>
+            </button>
+
+             <!-- Choix 4: CUSTOM -->
+             <button onclick="app.setupMode('custom')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-white text-left">
+                <div class="flex justify-between w-full items-center mb-1">
+                    <span class="text-3xl text-white font-display">LIBRE</span>
+                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">Config</span>
+                </div>
+                <p class="text-xs text-gray-400">Personnalisation totale.</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- ECRAN 3: SETUP (COMPACTÉ pour mobile)     -->
+    <!-- ========================================= -->
+    <div id="screen-setup" class="w-full h-full flex flex-col p-3 hidden-force pt-10 max-w-md mx-auto pb-2 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <button onclick="app.showScreen('screen-menu')" class="text-gray-400 text-sm font-bold border border-gray-600 px-3 py-2 rounded active:bg-gray-800">< RETOUR</button>
+            <h2 id="setup-title" class="text-xl font-display text-white text-right truncate ml-2">REGLAGES</h2>
+        </div>
+
+        <!-- Zone de texte scientifique réduite -->
+        <div class="bg-gray-900/80 p-3 rounded border border-gray-700 mb-2 shadow-lg shrink-0">
+            <div class="flex items-center gap-2 mb-1 text-yellow-400 font-bold">
+                <span class="text-base">ℹ️</span> <span>LA SCIENCE</span>
+            </div>
+            <p id="setup-science-text" class="text-xs text-gray-300 leading-tight">
+                <!-- JS Inject -->
+            </p>
+        </div>
+
+        <!-- Contrôles ULTRA COMPACTS -->
+        <div id="setup-controls" class="space-y-2 mb-2 shrink-0">
+            <!-- JS Inject -->
+        </div>
+
+        <!-- Bouton GO fixé en bas -->
+        <div class="mt-auto w-full pt-2">
+            <button onclick="app.startWorkout()" class="btn-tactical btn-action w-full py-5 text-4xl rounded-sm font-display tracking-widest text-black transform active:scale-95 transition-transform shadow-lg">
+                GO !
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- ECRAN 4: CHRONO ACTIF                     -->
+    <!-- ========================================= -->
+    <div id="screen-timer" class="w-full h-full flex flex-col hidden-force relative bg-black">
+        
+        <!-- Barres Latérales -->
+        <div class="absolute left-0 top-0 bottom-0 w-10 bg-gray-900 z-0 border-r border-gray-800">
+            <div id="visual-bar-left" class="w-full bg-white transition-all duration-1000 ease-linear absolute bottom-0 h-full"></div>
+        </div>
+        <div class="absolute right-0 top-0 bottom-0 w-10 bg-gray-900 z-0 border-l border-gray-800">
+            <div id="visual-bar-right" class="w-full bg-white transition-all duration-1000 ease-linear absolute bottom-0 h-full"></div>
+        </div>
+
+        <!-- Contenu Central -->
+        <div class="flex-1 flex flex-col items-center justify-between py-6 px-12 z-10 w-full max-w-2xl mx-auto">
+            
+            <!-- Header: Phase + Bouton X -->
+            <div class="w-full flex justify-between items-start mt-2">
+                <div class="text-left">
+                    <div id="timer-phase-label" class="text-3xl font-bold uppercase text-gray-400 tracking-wider">EFFORT</div>
+                    <div id="timer-round-counter" class="text-xl text-white mt-1 font-mono">SERIE 1 / 8</div>
+                </div>
+                <!-- BOUTON X ROUGE -->
+                <button onclick="app.quitWorkout()" class="btn-close w-14 h-14 flex items-center justify-center text-3xl rounded shadow-lg active:scale-90 transition-transform font-bold" style="touch-action: manipulation;">
+                    X
+                </button>
+            </div>
+
+            <!-- Visualization des Séries -->
+            <div id="reps-visualizer" class="flex gap-2 mt-6 w-full flex-wrap justify-center opacity-90"></div>
+
+            <!-- LE TIMER -->
+            <div class="flex flex-col items-center justify-center my-auto w-full">
+                <div id="timer-display" class="font-display text-[32vw] leading-none text-neon-volt tabular-nums text-center drop-shadow-2xl">
+                    00
+                </div>
+                <div id="timer-sub-display" class="text-3xl mt-4 text-gray-400 font-bold uppercase tracking-[0.3em]">
+                    SECONDES
+                </div>
+            </div>
+
+            <!-- Boutons Actions -->
+            <div class="w-full mb-4">
+                <button id="main-action-btn" onclick="app.handleAction()" class="btn-tactical w-full py-8 text-3xl bg-gray-800 border-gray-500 rounded hidden-force shadow-2xl font-display">
+                    FINI > REPOS
+                </button>
+                <div id="controls-standard" class="flex gap-2 w-full">
+                    <button onclick="app.togglePause()" class="btn-tactical flex-1 py-8 text-2xl bg-gray-800/90 border-gray-600">PAUSE</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MOTEUR JS -->
+    <script>
+        const AudioEngine = {
+            ctx: null,
+            init: function() {
+                if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+                if (this.ctx.state === 'suspended') { this.ctx.resume(); }
+            },
+            playTone: function(freq, type, duration) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            beepHigh: function() { this.playTone(880, 'square', 0.1); },
+            beepLow: function() { this.playTone(440, 'sine', 0.1); },
+            buzzer: function() { this.playTone(150, 'sawtooth', 0.8); }
+        };
+
+        const WakeLock = {
+            lock: null,
+            async request() {
+                if ('wakeLock' in navigator) {
+                    try { this.lock = await navigator.wakeLock.request('screen'); } catch (err) {}
+                }
+                document.getElementById('ios-audio-hack').play().catch(e=>{});
+            },
+            release() { if (this.lock) { this.lock.release(); this.lock = null; } }
+        };
+
+        const MODES = {
+            tabata: { name: "TABATA 20/10", desc: "Le protocole original. 20s effort, 10s repos. Améliore aérobie et anaérobie.", work: 20, rest: 10, sets: 8, type: 'interval' },
+            boxing: { name: "SPARRING PRO", desc: "3 min combat, 1 min repos. Gestion de l'effort sur la durée.", work: 180, rest: 60, sets: 12, type: 'interval' },
+            lafay: { name: "MÉTHODE X", desc: "Temps d'effort libre (vos reps), repos strict. Idéal pour la musculation au poids de corps.", work: 0, rest: 90, sets: 6, type: 'manual' },
+            custom: { name: "PERSONNALISÉ", desc: "Réglez vos temps. Mettez une valeur à 0 pour désactiver cette phase.", work: 30, rest: 30, sets: 5, type: 'interval' }
+        };
+
+        const app = {
+            state: {
+                currentScreen: 'screen-disclaimer', mode: null, config: {}, running: false, paused: false,
+                phase: 'ready', timeLeft: 0, totalTime: 0, currentSet: 1, intervalId: null
+            },
+
+            showScreen: function(screenId) {
+                document.querySelectorAll('body > div').forEach(el => {
+                    if(el.id !== 'ios-audio-hack' && !el.classList.contains('watermark-fixed') && !el.classList.contains('copyright-footer-fixed')) {
+                        el.classList.add('hidden-force');
+                    }
+                });
+                document.getElementById(screenId).classList.remove('hidden-force');
+                this.state.currentScreen = screenId;
+            },
+
+            acceptDisclaimer: function() {
+                localStorage.setItem('iron-timer-accepted', 'true');
+                AudioEngine.init();
+                this.showScreen('screen-menu');
+            },
+
+            setupMode: function(modeKey) {
+                this.state.mode = modeKey;
+                this.state.config = JSON.parse(JSON.stringify(MODES[modeKey]));
+                
+                document.getElementById('setup-title').innerText = this.state.config.name;
+                document.getElementById('setup-science-text').innerText = this.state.config.desc;
+                const controls = document.getElementById('setup-controls');
+                controls.innerHTML = ''; 
+
+                // Inputs COMPACTS
+                const createInput = (label, key, val, step) => `
+                    <div class="flex justify-between items-center bg-gray-800 p-2 rounded border border-gray-600 shadow-md">
+                        <label class="text-gray-200 font-bold text-sm">${label}</label>
+                        <div class="flex items-center gap-2">
+                            <button onclick="app.adjustConfig('${key}', -${step})" class="w-10 h-10 bg-gray-700 rounded text-xl font-bold active:bg-gray-600 shadow border border-gray-600">-</button>
+                            <span id="conf-${key}" class="w-14 text-center text-xl font-display text-white">${val}</span>
+                            <button onclick="app.adjustConfig('${key}', ${step})" class="w-10 h-10 bg-gray-700 rounded text-xl font-bold active:bg-gray-600 shadow border border-gray-600">+</button>
+                        </div>
+                    </div>`;
+
+                if (this.state.config.type === 'interval') {
+                    controls.innerHTML += createInput("EFFORT (s)", 'work', this.state.config.work, 5);
+                }
+                controls.innerHTML += createInput("REPOS (s)", 'rest', this.state.config.rest, 5);
+                controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
+
+                this.showScreen('screen-setup');
+            },
+
+            adjustConfig: function(key, delta) {
+                let current = this.state.config[key];
+                let step = Math.abs(delta);
+                let newVal;
+                let min = (this.state.mode === 'custom' && key !== 'sets') ? 0 : 1; 
+
+                if (delta > 0) {
+                    if (current === 1 && step === 5) newVal = 5;
+                    else newVal = current + step;
+                } else {
+                    newVal = current - step;
+                }
+
+                if (step === 5 && newVal % 5 !== 0 && newVal !== 1 && newVal !== 0) {
+                    newVal = Math.round(newVal / 5) * 5;
+                }
+                
+                if (newVal < min) newVal = min;
+                
+                if (this.state.mode === 'custom' && newVal === 0) {
+                    if (key === 'work' && this.state.config.rest === 0) newVal = 5;
+                    if (key === 'rest' && this.state.config.work === 0) newVal = 5;
+                }
+
+                this.state.config[key] = newVal;
+                document.getElementById(`conf-${key}`).innerText = newVal;
+            },
+
+            startWorkout: function() {
+                AudioEngine.init();
+                WakeLock.request();
+                this.state.currentSet = 1;
+                this.state.paused = false;
+                this.showScreen('screen-timer');
+                this.setupVisualizer();
+
+                if (this.state.config.type === 'manual') this.setPhase('manual_work');
+                else this.setPhase('get_ready');
+            },
+
+            setPhase: function(phase) {
+                if (phase === 'work' && this.state.config.work === 0) {
+                    this.state.phase = 'work'; this.nextPhase(); return;
+                }
+                if (phase === 'rest' && this.state.config.rest === 0) {
+                    this.state.phase = 'rest'; this.nextPhase(); return;
+                }
+
+                this.state.phase = phase;
+                const phaseLabel = document.getElementById('timer-phase-label');
+                const mainBtn = document.getElementById('main-action-btn');
+                const stdControls = document.getElementById('controls-standard');
+                const display = document.getElementById('timer-display');
+                const subDisplay = document.getElementById('timer-sub-display');
+                
+                document.body.style.backgroundColor = '#000';
+                display.className = "font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl";
+                
+                if (phase === 'get_ready') {
+                    this.state.timeLeft = 5; this.state.totalTime = 5;
+                    phaseLabel.innerText = "PRÉPAREZ-VOUS"; phaseLabel.className = "text-3xl font-bold uppercase text-blue-400";
+                    display.classList.add('text-white');
+                    mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    this.runTimer();
+                }
+                else if (phase === 'work') {
+                    this.state.timeLeft = this.state.config.work; this.state.totalTime = this.state.config.work;
+                    phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                    display.classList.add('text-neon-volt'); subDisplay.innerText = "TRAVAIL";
+                    AudioEngine.beepHigh();
+                    mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    this.runTimer();
+                }
+                else if (phase === 'manual_work') {
+                    phaseLabel.innerText = `SÉRIE ${this.state.currentSet}`; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                    display.innerText = "GO"; display.classList.add('text-neon-volt'); subDisplay.innerText = "FAITES VOS REPS";
+                    mainBtn.innerText = "SÉRIE TERMINÉE > REPOS"; mainBtn.className = "btn-tactical w-full py-10 text-2xl bg-[var(--color-volt)] text-black border-none rounded animate-pulse shadow-[0_0_30px_#CCFF00]";
+                    mainBtn.classList.remove('hidden-force'); stdControls.classList.add('hidden-force');
+                    AudioEngine.beepHigh(); this.stopTimerLoop();
+                }
+                else if (phase === 'rest') {
+                    this.state.timeLeft = this.state.config.rest; this.state.totalTime = this.state.config.rest;
+                    phaseLabel.innerText = "RÉCUPÉRATION"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
+                    display.classList.add('text-neon-alert'); subDisplay.innerText = "RESPIRER";
+                    mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    document.body.classList.add('animate-alert');
+                    AudioEngine.buzzer(); this.runTimer();
+                }
+                else if (phase === 'finished') {
+                    phaseLabel.innerText = "TERMINÉ"; display.innerText = "FIN"; display.classList.add('text-white'); subDisplay.innerText = "BRAVO";
+                    AudioEngine.playTone(600, 'square', 0.1); setTimeout(() => AudioEngine.playTone(800, 'square', 0.2), 150);
+                    document.body.classList.remove('animate-alert');
+                    this.stopTimerLoop(); WakeLock.release();
+                }
+                this.updateUI();
+            },
+
+            runTimer: function() {
+                this.stopTimerLoop();
+                this.state.running = true;
+                this.updateTimerDisplay();
+                this.state.intervalId = setInterval(() => {
+                    if (this.state.paused) return;
+                    this.state.timeLeft--;
+                    if (this.state.timeLeft > 0 && this.state.timeLeft <= 3) AudioEngine.beepLow();
+                    if (this.state.timeLeft < 0) this.nextPhase();
+                    else this.updateTimerDisplay();
+                }, 1000);
+            },
+
+            stopTimerLoop: function() {
+                if (this.state.intervalId) clearInterval(this.state.intervalId);
+                this.state.running = false;
+                document.body.classList.remove('animate-alert');
+            },
+
+            nextPhase: function() {
+                const conf = this.state.config;
+                if (this.state.phase === 'get_ready') {
+                    if (conf.type === 'manual') this.setPhase('manual_work');
+                    else this.setPhase('work');
+                }
+                else if (this.state.phase === 'work' || this.state.phase === 'manual_work') this.setPhase('rest');
+                else if (this.state.phase === 'rest') {
+                    if (this.state.currentSet < conf.sets) {
+                        this.state.currentSet++;
+                        if (conf.type === 'manual') this.setPhase('manual_work');
+                        else this.setPhase('work');
+                    } else this.setPhase('finished');
+                }
+            },
+
+            handleAction: function() { if (this.state.phase === 'manual_work') this.nextPhase(); },
+            togglePause: function() {
+                this.state.paused = !this.state.paused;
+                const btn = document.querySelector('#controls-standard button');
+                btn.innerText = this.state.paused ? "REPRENDRE" : "PAUSE";
+                btn.classList.toggle('bg-yellow-600');
+            },
+
+            quitWorkout: function() {
+                if(confirm("Arrêter l'entraînement et revenir au menu ?")) {
+                    this.stopTimerLoop();
+                    WakeLock.release();
+                    this.showScreen('screen-menu');
+                }
+            },
+
+            updateTimerDisplay: function() {
+                const display = document.getElementById('timer-display');
+                let timeStr;
+                if (this.state.timeLeft >= 60) {
+                    const m = Math.floor(this.state.timeLeft / 60);
+                    const s = this.state.timeLeft % 60;
+                    timeStr = `${m}:${s < 10 ? '0'+s : s}`;
+                    display.style.fontSize = "22vw"; 
+                } else {
+                    timeStr = this.state.timeLeft;
+                    display.style.fontSize = "32vw"; 
+                }
+                display.innerText = timeStr;
+
+                if (this.state.totalTime > 0) {
+                    const percentage = (this.state.timeLeft / this.state.totalTime) * 100;
+                    const barColor = this.state.phase === 'rest' ? 'var(--color-alert)' : (this.state.phase === 'get_ready' ? '#fff' : 'var(--color-volt)');
+                    document.getElementById('visual-bar-left').style.height = `${percentage}%`;
+                    document.getElementById('visual-bar-right').style.height = `${percentage}%`;
+                    document.getElementById('visual-bar-left').style.backgroundColor = barColor;
+                    document.getElementById('visual-bar-right').style.backgroundColor = barColor;
+                }
+            },
+
+            setupVisualizer: function() {
+                const container = document.getElementById('reps-visualizer');
+                container.innerHTML = '';
+                for(let i=1; i<=this.state.config.sets; i++) {
+                    const box = document.createElement('div');
+                    box.className = `w-8 h-8 border-2 border-gray-600 rounded-sm`;
+                    box.id = `rep-box-${i}`;
+                    container.appendChild(box);
+                }
+            },
+
+            updateUI: function() {
+                document.getElementById('timer-round-counter').innerText = `SÉRIE ${this.state.currentSet} / ${this.state.config.sets}`;
+                for(let i=1; i<=this.state.config.sets; i++) {
+                    const box = document.getElementById(`rep-box-${i}`);
+                    if (i < this.state.currentSet) box.className = "w-8 h-8 bg-gray-600 rounded-sm opacity-50";
+                    else if (i === this.state.currentSet) box.className = "w-8 h-8 bg-white shadow-[0_0_15px_white] rounded-sm scale-110 transition-transform border-none";
+                    else box.className = "w-8 h-8 border-2 border-gray-700 bg-transparent rounded-sm";
+                }
+            }
+        };
+
+        window.addEventListener('load', () => {
+            const setVH = () => {
+                let vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            };
+            setVH();
+            window.addEventListener('resize', setVH);
+        });
+    </script>
+</body>
+</html>
+<!-- © 2025 Yoni Brd — All Rights Reserved -->
+

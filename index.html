@@ -103,18 +103,6 @@
 
         .hidden-force { display: none !important; }
         
-        .watermark-fixed {
-            position: fixed;
-            top: 15px;
-            left: 60px; 
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.2); 
-            z-index: 9999;
-            font-family: var(--font-display);
-            letter-spacing: 1px;
-            pointer-events: none;
-        }
-
         .copyright-footer-fixed {
             position: fixed;
             bottom: 15px;
@@ -133,9 +121,6 @@
 </head>
 <body class="bg-kevlar flex flex-col items-center justify-center">
 
-    <!-- SIGNATURE PERMANENTE -->
-    <div class="watermark-fixed">By B.Y</div>
-
     <!-- AUDIO HACK iOS -->
     <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;">
         <source src="data:audio/mp3;base64,//MkxAA........" type="audio/mpeg">
@@ -145,6 +130,10 @@
     <!-- ECRAN 1: DISCLAIMER (Avertissement)       -->
     <!-- ========================================= -->
     <div id="screen-disclaimer" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center">
+        
+        <!-- SIGNATURE HAUT GAUCHE UNIQUEMENT ICI -->
+        <div class="absolute top-4 left-4 text-xs text-gray-600 font-display opacity-50">By Y.B</div>
+
         <h1 class="text-4xl text-red-600 font-display mb-6 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">ATTENTION</h1>
         
         <div class="border border-red-900 bg-red-900/10 p-6 rounded-lg mb-4 w-full max-w-md">
@@ -211,7 +200,7 @@
                 <p class="text-xs text-gray-400">Reps libres. Repos strict.</p>
             </button>
 
-             <!-- Choix 4: CUSTOM (Inversé avec Coherence) -->
+             <!-- Choix 4: CUSTOM -->
              <button onclick="app.setupMode('custom')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-white text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">LIBRE</span>
@@ -220,7 +209,7 @@
                 <p class="text-xs text-gray-400">Personnalisation totale.</p>
             </button>
 
-            <!-- Choix 5: RETOUR AU CALME (ex-Coherence) -->
+            <!-- Choix 5: RETOUR AU CALME -->
             <button onclick="app.setupMode('coherence')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-purple-500 text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">RETOUR AU CALME</span>
@@ -351,11 +340,10 @@
         };
 
         const MODES = {
-            tabata: { name: "TABATA 20/10", desc: "Le protocole original. 20s effort, 10s repos. Améliore aérobie et anaérobie.", work: 20, rest: 10, sets: 8, type: 'interval' },
-            boxing: { name: "SPARRING PRO", desc: "3 min combat, 1 min repos. Gestion de l'effort sur la durée.", work: 180, rest: 60, sets: 12, type: 'interval' },
-            lafay: { name: "MÉTHODE X", desc: "Temps d'effort libre (vos reps), repos strict. Idéal pour la musculation au poids de corps.", work: 0, rest: 90, sets: 6, type: 'manual' },
-            custom: { name: "PERSONNALISÉ", desc: "Réglez vos temps. Mettez une valeur à 0 pour désactiver cette phase.", work: 30, rest: 30, sets: 5, type: 'interval' },
-            // coherence renommé en RETOUR AU CALME + Ajout param 'hold'
+            tabata: { name: "TABATA 20/10", desc: "Le protocole original. 20s effort, 10s repos. Améliore aérobie et anaérobie.", work: 20, hold: 0, rest: 10, sets: 8, type: 'interval' },
+            boxing: { name: "SPARRING PRO", desc: "3 min combat, 1 min repos. Gestion de l'effort sur la durée.", work: 180, hold: 0, rest: 60, sets: 12, type: 'interval' },
+            lafay: { name: "MÉTHODE X", desc: "Temps d'effort libre (vos reps), repos strict. Idéal pour la musculation au poids de corps.", work: 0, hold: 0, rest: 90, sets: 6, type: 'manual' },
+            custom: { name: "PERSONNALISÉ", desc: "Réglez vos temps. Mettez une valeur à 0 pour désactiver cette phase.", work: 30, hold: 0, rest: 30, sets: 5, type: 'interval' },
             coherence: { name: "RETOUR AU CALME", desc: "Respiration apaisante. 5s inspi / 5s expi. Apaise le système nerveux sur 5min.", work: 5, hold: 0, rest: 5, sets: 30, type: 'interval' }
         };
 
@@ -367,7 +355,7 @@
 
             showScreen: function(screenId) {
                 document.querySelectorAll('body > div').forEach(el => {
-                    if(el.id !== 'ios-audio-hack' && !el.classList.contains('watermark-fixed') && !el.classList.contains('copyright-footer-fixed')) {
+                    if(el.id !== 'ios-audio-hack' && !el.classList.contains('copyright-footer-fixed')) {
                         el.classList.add('hidden-force');
                     }
                 });
@@ -402,7 +390,6 @@
 
                 if (this.state.config.type === 'interval') {
                     if(this.state.mode === 'coherence') {
-                        // REGLAGES SPECIFIQUES RETOUR AU CALME
                         controls.innerHTML += createInput("INSPIRER (s)", 'work', this.state.config.work, 1);
                         controls.innerHTML += createInput("MAINTENIR (s)", 'hold', this.state.config.hold, 1);
                         controls.innerHTML += createInput("EXPIRER (s)", 'rest', this.state.config.rest, 1);
@@ -412,6 +399,10 @@
                         controls.innerHTML += createInput("REPOS (s)", 'rest', this.state.config.rest, 5);
                         controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
                     }
+                } else if (this.state.config.type === 'manual') {
+                    // CORRECTION: Ajout des inputs pour la Méthode X (Manuel)
+                    controls.innerHTML += createInput("REPOS (s)", 'rest', this.state.config.rest, 5);
+                    controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
                 }
 
                 this.showScreen('screen-setup');
@@ -420,11 +411,10 @@
             adjustConfig: function(key, delta) {
                 let current = this.state.config[key];
                 let step = Math.abs(delta);
-                // Step securite
                 if(step === 1 && key !== 'sets' && this.state.mode !== 'coherence') step = 5; 
 
                 let newVal;
-                let min = (this.state.mode === 'custom' && key !== 'sets') ? 0 : 0; // Hold peut être 0
+                let min = 0; 
                 if (key === 'sets' || (key === 'work' && this.state.mode !== 'custom') || (key === 'rest' && this.state.mode !== 'custom')) min = 1;
 
                 if (delta > 0) {
@@ -440,7 +430,6 @@
                 
                 if (newVal < min) newVal = min;
                 
-                // Securité custom
                 if (this.state.mode === 'custom' && newVal === 0) {
                     if (key === 'work' && this.state.config.rest === 0) newVal = 5;
                     if (key === 'rest' && this.state.config.work === 0) newVal = 5;
@@ -463,16 +452,10 @@
             },
 
             setPhase: function(phase) {
-                // Skip logic
-                if (phase === 'work' && this.state.config.work === 0) {
-                    this.state.phase = 'work'; this.nextPhase(); return;
-                }
-                if (phase === 'hold' && this.state.config.hold === 0) {
-                    this.state.phase = 'hold'; this.nextPhase(); return;
-                }
-                if (phase === 'rest' && this.state.config.rest === 0) {
-                    this.state.phase = 'rest'; this.nextPhase(); return;
-                }
+                // Ignore skip logic if duration is 0, just go next immediately
+                if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
+                if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
+                if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
 
                 this.state.phase = phase;
                 const phaseLabel = document.getElementById('timer-phase-label');
@@ -483,7 +466,7 @@
                 
                 document.body.style.backgroundColor = '#000';
                 display.className = "font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl";
-                display.classList.remove('text-white', 'text-neon-volt', 'text-neon-alert'); // Reset colors
+                display.classList.remove('text-white', 'text-neon-volt', 'text-neon-alert'); 
                 
                 if (phase === 'get_ready') {
                     this.state.timeLeft = 5; this.state.totalTime = 5;
@@ -495,8 +478,8 @@
                 else if (phase === 'work') {
                     this.state.timeLeft = this.state.config.work; this.state.totalTime = this.state.config.work;
                     if(this.state.mode === 'coherence') {
-                        phaseLabel.innerText = "INSPIRER"; // Reste INSPIRER
-                        subDisplay.innerText = "INSPIRER"; // Demande: remplacer gonfler par inspirer
+                        phaseLabel.innerText = "INSPIRER"; 
+                        subDisplay.innerText = "INSPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
                     } else {
                         phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
@@ -508,13 +491,11 @@
                     this.runTimer();
                 }
                 else if (phase === 'hold') {
-                    // NOUVELLE PHASE MAINTENIR
                     this.state.timeLeft = this.state.config.hold; this.state.totalTime = this.state.config.hold;
                     phaseLabel.innerText = "MAINTENIR"; 
                     phaseLabel.className = "text-3xl font-bold uppercase text-white";
                     subDisplay.innerText = "BLOCAGE";
                     display.classList.add('text-white');
-                    // Pas de son ou son discret
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
                     this.runTimer();
                 }
@@ -529,16 +510,19 @@
                     this.state.timeLeft = this.state.config.rest; this.state.totalTime = this.state.config.rest;
                     if(this.state.mode === 'coherence') {
                         phaseLabel.innerText = "EXPIRER"; 
-                        subDisplay.innerText = "EXPIRER"; // Demande: remplacer vider par expirer
+                        subDisplay.innerText = "EXPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
+                        AudioEngine.beepHigh(); // Son apaisant (bip court)
                     } else {
+                        // CORRECTION TEXTE: Remplacement de "RESPIRER" par "RÉCUPÉRATION"
                         phaseLabel.innerText = "RÉCUPÉRATION"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
-                        subDisplay.innerText = "RESPIRER";
+                        subDisplay.innerText = "RÉCUPÉRATION";
+                        AudioEngine.buzzer(); // Son fort
                     }
                     display.classList.add('text-neon-alert'); 
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
                     document.body.classList.add('animate-alert');
-                    AudioEngine.buzzer(); this.runTimer();
+                    this.runTimer();
                 }
                 else if (phase === 'finished') {
                     phaseLabel.innerText = "TERMINÉ"; display.innerText = "FIN"; display.classList.add('text-white'); subDisplay.innerText = "BRAVO";
@@ -556,9 +540,13 @@
                 this.state.intervalId = setInterval(() => {
                     if (this.state.paused) return;
                     this.state.timeLeft--;
-                    if (this.state.timeLeft > 0 && this.state.timeLeft <= 3) AudioEngine.beepLow();
-                    if (this.state.timeLeft < 0) this.nextPhase();
-                    else this.updateTimerDisplay();
+                    
+                    if (this.state.timeLeft === 0) {
+                         this.nextPhase();
+                    } else {
+                        if (this.state.timeLeft > 0 && this.state.timeLeft <= 3) AudioEngine.beepLow();
+                        this.updateTimerDisplay();
+                    }
                 }, 1000);
             },
 
@@ -575,11 +563,10 @@
                     else this.setPhase('work');
                 }
                 else if (this.state.phase === 'work') {
-                    // Apres effort, on va vers Hold (si dispo) sinon Rest
-                    this.setPhase('hold');
+                    if (conf.hold > 0) this.setPhase('hold');
+                    else this.setPhase('rest');
                 }
                 else if (this.state.phase === 'hold') {
-                    // Apres hold, on expire (rest)
                     this.setPhase('rest');
                 }
                 else if (this.state.phase === 'manual_work') this.setPhase('rest');

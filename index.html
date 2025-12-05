@@ -139,7 +139,7 @@
             color: var(--color-volt);
         }
         
-        /* Détection CSS : Si paysage ET hauteur < largeur (typique mobile) */
+        /* Détection CSS : Si paysage ET hauteur < largeur */
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock-screen { display: flex; }
         }
@@ -356,6 +356,7 @@
                 if (this.ctx.state === 'suspended') { this.ctx.resume(); }
             },
             
+            // NOUVEAU MOTEUR SONORE: STYLE CLOCHE
             playBell: function(freq, type='sine', duration=1.5, vol=0.8) {
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
@@ -364,10 +365,11 @@
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
                 
+                // Enveloppe de Cloche: Attaque immédiate, décade exponentielle longue
                 const now = this.ctx.currentTime;
                 gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(vol, now + 0.01); 
-                gain.gain.exponentialRampToValueAtTime(0.001, now + duration); 
+                gain.gain.linearRampToValueAtTime(vol, now + 0.01); // Frappe
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Résonance
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -375,6 +377,7 @@
                 osc.stop(now + duration);
             },
 
+            // SONS MAPPÉS
             beepHigh: function() { this.playBell(880, 'sine', 1.5, 0.8); }, // Cloche Aigue (GO)
             buzzer: function() { this.playBell(440, 'triangle', 1.5, 0.6); }, // Cloche Grave (Repos)
             
@@ -580,7 +583,16 @@
                     btn.classList.add('bg-red-600');
                     this.state.intervalId = setInterval(() => {
                         this.state.elapsedTime += 0.1;
-                        document.getElementById('timer-display').innerText = this.state.elapsedTime.toFixed(1);
+                        const timeStr = this.state.elapsedTime.toFixed(1);
+                        const display = document.getElementById('timer-display');
+                        display.innerText = timeStr;
+                        
+                        // AUTO-ZOOM LOGIC (Redimensionne selon la longueur)
+                        if (timeStr.length >= 6) display.style.fontSize = "17vw"; // 1000.0+
+                        else if (timeStr.length >= 5) display.style.fontSize = "22vw"; // 100.0+
+                        else if (timeStr.length >= 4) display.style.fontSize = "28vw"; // 10.0+
+                        else display.style.fontSize = "40vw"; // 0.0 -> 9.9
+                        
                     }, 100);
                 } else {
                     clearInterval(this.state.intervalId);

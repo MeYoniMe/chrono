@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
-<!-- © 2025 Yoni - All rights reserved -->
+<!-- © 2025 Yoni - All rights reserved -->    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
-    <!-- Tentative de verrouillage via Meta Tags (Android/Chrome) -->
+    <!-- Tentative de verrouillage via Meta Tags -->
     <meta name="screen-orientation" content="portrait">
     <meta name="x5-orientation" content="portrait">
     
@@ -127,7 +127,7 @@
 
         /* --- LOCK ORIENTATION OVERLAY --- */
         #orientation-lock-screen {
-            display: none; /* Caché par défaut */
+            display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #000;
@@ -139,7 +139,6 @@
             color: var(--color-volt);
         }
         
-        /* Détection CSS : Si paysage ET hauteur < largeur */
         @media screen and (orientation: landscape) and (max-height: 600px) {
             #orientation-lock-screen { display: flex; }
         }
@@ -147,14 +146,14 @@
 </head>
 <body class="bg-kevlar flex flex-col items-center justify-center">
 
-    <!-- OVERLAY DE VERROUILLAGE D'ORIENTATION -->
+    <!-- OVERLAY -->
     <div id="orientation-lock-screen">
         <div class="text-6xl mb-4">↻</div>
         <h2 class="text-2xl font-display uppercase tracking-widest mb-2">MODE PORTRAIT REQUIS</h2>
         <p class="text-gray-400 text-sm px-8">Pour une meilleure expérience tactique,<br>veuillez tourner votre appareil.</p>
     </div>
 
-    <!-- AUDIO HACK iOS -->
+    <!-- AUDIO HACK -->
     <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;">
         <source src="data:audio/mp3;base64,//MkxAA........" type="audio/mpeg">
     </audio>
@@ -163,10 +162,7 @@
     <!-- ECRAN 1: DISCLAIMER (Avertissement)       -->
     <!-- ========================================= -->
     <div id="screen-disclaimer" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center">
-        
-        <!-- SIGNATURE HAUT GAUCHE -->
         <div class="absolute top-4 left-4 text-xs text-gray-600 font-display opacity-50">By Y.B</div>
-
         <h1 class="text-4xl text-red-600 font-display mb-6 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">ATTENTION</h1>
         
         <div class="border border-red-900 bg-red-900/10 p-6 rounded-lg mb-4 w-full max-w-md">
@@ -205,7 +201,7 @@
         
         <div class="grid grid-cols-1 gap-3 flex-1 overflow-y-auto pb-4 max-w-md mx-auto w-full">
             
-            <!-- Choix 1: TABATA -->
+            <!-- Choix 1 -->
             <button onclick="app.setupMode('tabata')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-[var(--color-volt)] text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">TABATA</span>
@@ -213,7 +209,7 @@
                 <p class="text-xs text-gray-400">Cardio Max. Brûle-graisse.</p>
             </button>
 
-            <!-- Choix 2: BOXE -->
+            <!-- Choix 2 -->
             <button onclick="app.setupMode('boxing')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-red-600 text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">SPARRING</span>
@@ -221,7 +217,7 @@
                 <p class="text-xs text-gray-400">Endurance combat & Souffle.</p>
             </button>
 
-            <!-- Choix 3: METHODE X -->
+            <!-- Choix 3 -->
             <button onclick="app.setupMode('lafay')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-blue-500 text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">MÉTHODE X</span>
@@ -229,7 +225,7 @@
                 <p class="text-xs text-gray-400">Reps libres. Repos strict.</p>
             </button>
 
-            <!-- Choix 4: COURSE -->
+            <!-- Choix 4 -->
             <button onclick="app.setupMode('running')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-orange-500 text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">COURSE</span>
@@ -237,7 +233,7 @@
                 <p class="text-xs text-gray-400">Chronomètre + Tours (Laps).</p>
             </button>
 
-             <!-- Choix 5: CUSTOM -->
+             <!-- Choix 5 -->
              <button onclick="app.setupMode('custom')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-white text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">LIBRE</span>
@@ -245,7 +241,7 @@
                 <p class="text-xs text-gray-400">Personnalisation totale.</p>
             </button>
 
-            <!-- Choix 6: RETOUR AU CALME -->
+            <!-- Choix 6 -->
             <button onclick="app.setupMode('coherence')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-purple-500 text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">RETOUR AU CALME</span>
@@ -324,9 +320,7 @@
                 </div>
                 
                 <!-- LISTE DES TOURS (Visible uniquement en mode Running) -->
-                <div id="laps-container" class="w-full hidden-force mt-4 space-y-2 max-h-40 overflow-y-auto">
-                    <!-- JS Injected Laps -->
-                </div>
+                <div id="laps-container" class="w-full hidden-force mt-4 space-y-2 max-h-40 overflow-y-auto"></div>
             </div>
 
             <!-- Boutons -->
@@ -337,7 +331,7 @@
                 <div id="controls-standard" class="flex gap-2 w-full">
                     <button id="btn-pause-toggle" onclick="app.togglePause()" class="btn-tactical flex-1 py-8 text-2xl bg-gray-800/90 border-gray-600">PAUSE</button>
                 </div>
-                <!-- Controls Course (Start/Stop + Lap) -->
+                <!-- Controls Course -->
                 <div id="controls-running" class="flex gap-4 w-full hidden-force">
                     <button id="btn-lap" onclick="app.recordLap()" class="btn-tactical flex-1 py-8 text-2xl bg-blue-900/90 border-blue-500">TOUR</button>
                     <button id="btn-stop-run" onclick="app.toggleRun()" class="btn-tactical flex-1 py-8 text-2xl bg-[var(--color-volt)] text-black border-none">START</button>
@@ -356,7 +350,6 @@
                 if (this.ctx.state === 'suspended') { this.ctx.resume(); }
             },
             
-            // NOUVEAU MOTEUR SONORE: STYLE CLOCHE
             playBell: function(freq, type='sine', duration=1.5, vol=0.8) {
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
@@ -365,11 +358,10 @@
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
                 
-                // Enveloppe de Cloche: Attaque immédiate, décade exponentielle longue
                 const now = this.ctx.currentTime;
                 gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(vol, now + 0.01); // Frappe
-                gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Résonance
+                gain.gain.linearRampToValueAtTime(vol, now + 0.01); 
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration); 
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -377,11 +369,8 @@
                 osc.stop(now + duration);
             },
 
-            // SONS MAPPÉS
-            beepHigh: function() { this.playBell(880, 'sine', 1.5, 0.8); }, // Cloche Aigue (GO)
-            buzzer: function() { this.playBell(440, 'triangle', 1.5, 0.6); }, // Cloche Grave (Repos)
-            
-            // MELODIC ZEN
+            beepHigh: function() { this.playBell(880, 'sine', 1.5, 0.8); }, 
+            buzzer: function() { this.playBell(440, 'triangle', 1.5, 0.6); }, 
             zenInhale: function() { this.playBell(432, 'sine', 3.0, 0.5); },   
             zenHold: function() { this.playBell(528, 'sine', 2.5, 0.4); },     
             zenExhale: function() { this.playBell(324, 'sine', 3.5, 0.6); }    
@@ -428,7 +417,6 @@
                 localStorage.setItem('iron-timer-accepted', 'true');
                 AudioEngine.init();
                 
-                // Tentative de Lock JS (Android Fullscreen)
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen().then(() => {
                         if (screen.orientation && screen.orientation.lock) {
@@ -533,7 +521,6 @@
                 this.showScreen('screen-timer');
 
                 if (this.state.config.type === 'stopwatch') {
-                    // MODE COURSE
                     this.state.running = false; 
                     document.getElementById('timer-phase-label').innerText = "CHRONO";
                     document.getElementById('timer-round-counter').classList.add('hidden-force');
@@ -587,11 +574,10 @@
                         const display = document.getElementById('timer-display');
                         display.innerText = timeStr;
                         
-                        // AUTO-ZOOM LOGIC (Redimensionne selon la longueur)
-                        if (timeStr.length >= 6) display.style.fontSize = "17vw"; // 1000.0+
-                        else if (timeStr.length >= 5) display.style.fontSize = "22vw"; // 100.0+
-                        else if (timeStr.length >= 4) display.style.fontSize = "28vw"; // 10.0+
-                        else display.style.fontSize = "40vw"; // 0.0 -> 9.9
+                        if (timeStr.length >= 6) display.style.fontSize = "17vw"; 
+                        else if (timeStr.length >= 5) display.style.fontSize = "22vw"; 
+                        else if (timeStr.length >= 4) display.style.fontSize = "28vw"; 
+                        else display.style.fontSize = "40vw"; 
                         
                     }, 100);
                 } else {
@@ -626,6 +612,7 @@
                 barLeft.classList.remove('no-transition');
                 barRight.classList.remove('no-transition');
 
+                // SKIP LOGIC
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
                 if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
@@ -711,7 +698,10 @@
                     phaseLabel.innerText = "TERMINÉ"; display.innerText = "FIN"; display.classList.add('text-white'); subDisplay.innerText = "BRAVO";
                     AudioEngine.playTone(600, 'square', 0.1); setTimeout(() => AudioEngine.playTone(800, 'square', 0.2), 150);
                     document.body.classList.remove('animate-alert');
-                    this.stopTimerLoop(); WakeLock.release();
+                    
+                    // FIX: Stop and Release immediately
+                    this.stopTimerLoop(); 
+                    WakeLock.release();
                 }
                 this.updateUI();
             },
@@ -722,6 +712,13 @@
                 this.updateTimerDisplay();
                 this.state.intervalId = setInterval(() => {
                     if (this.state.paused) return;
+                    
+                    // FIX: Double security check
+                    if (this.state.phase === 'finished') {
+                        this.stopTimerLoop();
+                        return;
+                    }
+
                     this.state.timeLeft--;
                     
                     if (this.state.timeLeft === 0) {
@@ -733,7 +730,10 @@
             },
 
             stopTimerLoop: function() {
-                if (this.state.intervalId) clearInterval(this.state.intervalId);
+                if (this.state.intervalId) {
+                    clearInterval(this.state.intervalId);
+                    this.state.intervalId = null; // FIX: Nullify ID
+                }
                 this.state.running = false;
                 document.body.classList.remove('animate-alert');
             },
@@ -783,6 +783,9 @@
             },
 
             updateTimerDisplay: function() {
+                // FIX: Guard against finished state
+                if (this.state.phase === 'finished') return;
+
                 const display = document.getElementById('timer-display');
                 let timeStr;
                 if (this.state.timeLeft >= 60) {

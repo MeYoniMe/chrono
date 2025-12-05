@@ -10,6 +10,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
+    <!-- Tentative de verrouillage via Meta Tags (Android/Chrome) -->
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
     
     <!-- Importation Police Tactique -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -121,9 +124,35 @@
             pointer-events: none;
             padding: 0 10px;
         }
+
+        /* --- LOCK ORIENTATION OVERLAY --- */
+        #orientation-lock-screen {
+            display: none; /* Caché par défaut */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 10000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--color-volt);
+        }
+        
+        /* Détection CSS : Si paysage ET hauteur < largeur (typique mobile) */
+        @media screen and (orientation: landscape) and (max-height: 600px) {
+            #orientation-lock-screen { display: flex; }
+        }
     </style>
 </head>
 <body class="bg-kevlar flex flex-col items-center justify-center">
+
+    <!-- OVERLAY DE VERROUILLAGE D'ORIENTATION -->
+    <div id="orientation-lock-screen">
+        <div class="text-6xl mb-4">↻</div>
+        <h2 class="text-2xl font-display uppercase tracking-widest mb-2">MODE PORTRAIT REQUIS</h2>
+        <p class="text-gray-400 text-sm px-8">Pour une meilleure expérience tactique,<br>veuillez tourner votre appareil.</p>
+    </div>
 
     <!-- AUDIO HACK iOS -->
     <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;">
@@ -384,7 +413,7 @@
 
             showScreen: function(screenId) {
                 document.querySelectorAll('body > div').forEach(el => {
-                    if(el.id !== 'ios-audio-hack' && !el.classList.contains('copyright-footer-fixed')) {
+                    if(el.id !== 'ios-audio-hack' && !el.classList.contains('copyright-footer-fixed') && el.id !== 'orientation-lock-screen') {
                         el.classList.add('hidden-force');
                     }
                 });
@@ -395,6 +424,16 @@
             acceptDisclaimer: function() {
                 localStorage.setItem('iron-timer-accepted', 'true');
                 AudioEngine.init();
+                
+                // Tentative de Lock JS (Android Fullscreen)
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().then(() => {
+                        if (screen.orientation && screen.orientation.lock) {
+                            screen.orientation.lock('portrait').catch(e => console.log('Lock failed', e));
+                        }
+                    }).catch(e => console.log('Fullscreen failed', e));
+                }
+                
                 this.showScreen('screen-menu');
             },
 
@@ -491,21 +530,19 @@
                 this.showScreen('screen-timer');
 
                 if (this.state.config.type === 'stopwatch') {
-                    // MODE COURSE : SETUP SPECIAL
+                    // MODE COURSE
                     this.state.running = false; 
                     document.getElementById('timer-phase-label').innerText = "CHRONO";
                     document.getElementById('timer-round-counter').classList.add('hidden-force');
                     document.getElementById('reps-visualizer').classList.add('hidden-force');
                     
-                    // Modif: Cacher les barres latérales
                     document.getElementById('sidebar-left-container').classList.add('hidden-force');
                     document.getElementById('sidebar-right-container').classList.add('hidden-force');
 
-                    // Modif: Affichage agrandi + Jaune Fluo
                     const timerDisp = document.getElementById('timer-display');
                     timerDisp.innerText = "0.0";
-                    timerDisp.style.fontSize = "40vw"; // Zoom
-                    timerDisp.classList.add('text-neon-volt'); // Force Yellow
+                    timerDisp.style.fontSize = "40vw"; 
+                    timerDisp.classList.add('text-neon-volt'); 
                     
                     document.getElementById('timer-sub-display').innerText = "SECONDES";
                     
@@ -520,14 +557,12 @@
                     btnStop.classList.add('bg-[var(--color-volt)]');
                 } 
                 else {
-                    // RESET POUR LES AUTRES MODES
                     document.getElementById('sidebar-left-container').classList.remove('hidden-force');
                     document.getElementById('sidebar-right-container').classList.remove('hidden-force');
                     
-                    // Reset style timer
                     const timerDisp = document.getElementById('timer-display');
                     timerDisp.classList.remove('text-neon-volt'); 
-                    timerDisp.style.fontSize = ""; // Retour au CSS par defaut (22/32vw)
+                    timerDisp.style.fontSize = ""; 
 
                     this.setupVisualizer();
                     document.getElementById('controls-standard').classList.remove('hidden-force');
@@ -569,7 +604,6 @@
             },
 
             setPhase: function(phase) {
-                // ... (code existant) ...
                 const barLeft = document.getElementById('visual-bar-left');
                 const barRight = document.getElementById('visual-bar-right');
                 barLeft.classList.add('no-transition');
@@ -592,7 +626,6 @@
                 const subDisplay = document.getElementById('timer-sub-display');
                 
                 document.body.style.backgroundColor = '#000';
-                // Reset standard
                 display.className = "font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl";
                 display.classList.remove('text-white', 'text-neon-volt', 'text-neon-alert'); 
                 
@@ -671,8 +704,6 @@
                 this.updateUI();
             },
 
-            // ... (reste du code inchangé) ...
-            
             runTimer: function() {
                 this.stopTimerLoop();
                 this.state.running = true;

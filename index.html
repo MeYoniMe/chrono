@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
-<!-- © 2025 Yoni Brd — All Rights Reserved -->
+<!-- © 2025 Yoni - All rights reserved -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -261,10 +261,10 @@
     <div id="screen-timer" class="w-full h-full flex flex-col hidden-force relative bg-black">
         
         <!-- Barres Latérales -->
-        <div class="absolute left-0 top-0 bottom-0 w-10 bg-gray-900 z-0 border-r border-gray-800">
+        <div id="sidebar-left-container" class="absolute left-0 top-0 bottom-0 w-10 bg-gray-900 z-0 border-r border-gray-800">
             <div id="visual-bar-left" class="w-full bg-white transition-all duration-1000 ease-linear absolute bottom-0 h-full"></div>
         </div>
-        <div class="absolute right-0 top-0 bottom-0 w-10 bg-gray-900 z-0 border-l border-gray-800">
+        <div id="sidebar-right-container" class="absolute right-0 top-0 bottom-0 w-10 bg-gray-900 z-0 border-l border-gray-800">
             <div id="visual-bar-right" class="w-full bg-white transition-all duration-1000 ease-linear absolute bottom-0 h-full"></div>
         </div>
 
@@ -327,7 +327,6 @@
                 if (this.ctx.state === 'suspended') { this.ctx.resume(); }
             },
             
-            // NOUVEAU MOTEUR SONORE: STYLE CLOCHE
             playBell: function(freq, type='sine', duration=1.5, vol=0.8) {
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
@@ -336,11 +335,10 @@
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
                 
-                // Enveloppe de Cloche: Attaque immédiate, décade exponentielle longue
                 const now = this.ctx.currentTime;
                 gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(vol, now + 0.01); // Frappe
-                gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Résonance
+                gain.gain.linearRampToValueAtTime(vol, now + 0.01); 
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration); 
                 
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -348,16 +346,12 @@
                 osc.stop(now + duration);
             },
 
-            // SONS MAPPÉS
             beepHigh: function() { this.playBell(880, 'sine', 1.5, 0.8); }, // Cloche Aigue (GO)
             buzzer: function() { this.playBell(440, 'triangle', 1.5, 0.6); }, // Cloche Grave (Repos)
             
-            // NOUVEAUX SONS ZEN DISTINCTS (Melodic Breath)
-            // INSPIRER: 432Hz (Medium - Montée)
+            // MELODIC ZEN
             zenInhale: function() { this.playBell(432, 'sine', 3.0, 0.5); },   
-            // MAINTENIR: 528Hz (Haut - Suspension/Flottement)
             zenHold: function() { this.playBell(528, 'sine', 2.5, 0.4); },     
-            // EXPIRER: 324Hz (Bas - Ancrage/Relâchement)
             zenExhale: function() { this.playBell(324, 'sine', 3.5, 0.6); }    
         };
 
@@ -497,11 +491,22 @@
                 this.showScreen('screen-timer');
 
                 if (this.state.config.type === 'stopwatch') {
+                    // MODE COURSE : SETUP SPECIAL
                     this.state.running = false; 
                     document.getElementById('timer-phase-label').innerText = "CHRONO";
                     document.getElementById('timer-round-counter').classList.add('hidden-force');
                     document.getElementById('reps-visualizer').classList.add('hidden-force');
-                    document.getElementById('timer-display').innerText = "0.0";
+                    
+                    // Modif: Cacher les barres latérales
+                    document.getElementById('sidebar-left-container').classList.add('hidden-force');
+                    document.getElementById('sidebar-right-container').classList.add('hidden-force');
+
+                    // Modif: Affichage agrandi + Jaune Fluo
+                    const timerDisp = document.getElementById('timer-display');
+                    timerDisp.innerText = "0.0";
+                    timerDisp.style.fontSize = "40vw"; // Zoom
+                    timerDisp.classList.add('text-neon-volt'); // Force Yellow
+                    
                     document.getElementById('timer-sub-display').innerText = "SECONDES";
                     
                     document.getElementById('controls-standard').classList.add('hidden-force');
@@ -515,6 +520,15 @@
                     btnStop.classList.add('bg-[var(--color-volt)]');
                 } 
                 else {
+                    // RESET POUR LES AUTRES MODES
+                    document.getElementById('sidebar-left-container').classList.remove('hidden-force');
+                    document.getElementById('sidebar-right-container').classList.remove('hidden-force');
+                    
+                    // Reset style timer
+                    const timerDisp = document.getElementById('timer-display');
+                    timerDisp.classList.remove('text-neon-volt'); 
+                    timerDisp.style.fontSize = ""; // Retour au CSS par defaut (22/32vw)
+
                     this.setupVisualizer();
                     document.getElementById('controls-standard').classList.remove('hidden-force');
                     if (this.state.config.type === 'manual') this.setPhase('manual_work');
@@ -522,7 +536,6 @@
                 }
             },
 
-            // --- STOPWATCH LOGIC ---
             toggleRun: function() {
                 const btn = document.getElementById('btn-stop-run');
                 if (!this.state.running) {
@@ -555,8 +568,8 @@
                 document.getElementById('laps-container').prepend(div);
             },
 
-            // --- INTERVAL LOGIC ---
             setPhase: function(phase) {
+                // ... (code existant) ...
                 const barLeft = document.getElementById('visual-bar-left');
                 const barRight = document.getElementById('visual-bar-right');
                 barLeft.classList.add('no-transition');
@@ -579,6 +592,7 @@
                 const subDisplay = document.getElementById('timer-sub-display');
                 
                 document.body.style.backgroundColor = '#000';
+                // Reset standard
                 display.className = "font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl";
                 display.classList.remove('text-white', 'text-neon-volt', 'text-neon-alert'); 
                 
@@ -596,7 +610,6 @@
                         phaseLabel.innerText = "INSPIRER"; 
                         subDisplay.innerText = "INSPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
-                        // INHALE SOUND (Medium)
                         AudioEngine.zenInhale(); 
                     } 
                     else if (this.state.mode === 'boxing') {
@@ -621,7 +634,6 @@
                     display.classList.add('text-white');
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
                     
-                    // HOLD SOUND (High)
                     if(this.state.mode === 'coherence') AudioEngine.zenHold(); 
                     this.runTimer();
                 }
@@ -638,7 +650,6 @@
                         phaseLabel.innerText = "EXPIRER"; 
                         subDisplay.innerText = "EXPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
-                        // EXHALE SOUND (Low)
                         AudioEngine.zenExhale(); 
                     } else {
                         phaseLabel.innerText = "RÉCUP."; 
@@ -660,6 +671,8 @@
                 this.updateUI();
             },
 
+            // ... (reste du code inchangé) ...
+            
             runTimer: function() {
                 this.stopTimerLoop();
                 this.state.running = true;

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+<!-- © 2025 Yoni Brd — All Rights Reserved -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -58,6 +59,8 @@
         .text-neon-alert { color: var(--color-alert); text-shadow: 0 0 15px rgba(255, 51, 51, 0.6); }
         
         .font-display { font-family: var(--font-display); letter-spacing: 2px; }
+        
+        .font-tech { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: bold; }
 
         /* --- UI ELEMENTS --- */
         .btn-tactical {
@@ -102,6 +105,7 @@
         .animate-alert { animation: pulse-red 1s infinite; }
 
         .hidden-force { display: none !important; }
+        .no-transition { transition: none !important; }
         
         .copyright-footer-fixed {
             position: fixed;
@@ -131,7 +135,7 @@
     <!-- ========================================= -->
     <div id="screen-disclaimer" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center">
         
-        <!-- SIGNATURE HAUT GAUCHE UNIQUEMENT ICI -->
+        <!-- SIGNATURE HAUT GAUCHE -->
         <div class="absolute top-4 left-4 text-xs text-gray-600 font-display opacity-50">By Y.B</div>
 
         <h1 class="text-4xl text-red-600 font-display mb-6 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">ATTENTION</h1>
@@ -165,7 +169,6 @@
     <!-- ========================================= -->
     <div id="screen-menu" class="w-full h-full flex flex-col p-4 hidden-force pt-12">
         
-        <!-- LOGO -->
         <div class="flex justify-center items-center mb-6 mt-2 flex-col">
             <h2 class="text-5xl font-display text-white tracking-widest drop-shadow-lg">IRON TIMER</h2>
             <div class="text-[10px] text-gray-500 tracking-[0.6em] mt-2">TACTICAL TRAINING APP</div>
@@ -177,7 +180,6 @@
             <button onclick="app.setupMode('tabata')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-[var(--color-volt)] text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">TABATA</span>
-                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">20s / 10s</span>
                 </div>
                 <p class="text-xs text-gray-400">Cardio Max. Brûle-graisse.</p>
             </button>
@@ -186,7 +188,6 @@
             <button onclick="app.setupMode('boxing')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-red-600 text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">SPARRING</span>
-                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">3min / 1min</span>
                 </div>
                 <p class="text-xs text-gray-400">Endurance combat & Souffle.</p>
             </button>
@@ -195,25 +196,30 @@
             <button onclick="app.setupMode('lafay')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-blue-500 text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">MÉTHODE X</span>
-                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">Repos Fixe</span>
                 </div>
                 <p class="text-xs text-gray-400">Reps libres. Repos strict.</p>
             </button>
 
-             <!-- Choix 4: CUSTOM -->
+            <!-- Choix 4: COURSE -->
+            <button onclick="app.setupMode('running')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-orange-500 text-left">
+                <div class="flex justify-between w-full items-center mb-1">
+                    <span class="text-3xl text-white font-display">COURSE</span>
+                </div>
+                <p class="text-xs text-gray-400">Chronomètre + Tours (Laps).</p>
+            </button>
+
+             <!-- Choix 5: CUSTOM -->
              <button onclick="app.setupMode('custom')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-white text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">LIBRE</span>
-                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">Config</span>
                 </div>
                 <p class="text-xs text-gray-400">Personnalisation totale.</p>
             </button>
 
-            <!-- Choix 5: RETOUR AU CALME -->
+            <!-- Choix 6: RETOUR AU CALME -->
             <button onclick="app.setupMode('coherence')" class="btn-tactical flex-col p-5 rounded-xl border-l-8 border-l-purple-500 text-left">
                 <div class="flex justify-between w-full items-center mb-1">
                     <span class="text-3xl text-white font-display">RETOUR AU CALME</span>
-                    <span class="text-xs bg-gray-800 px-2 py-1 rounded border border-gray-600">5s / 0s / 5s</span>
                 </div>
                 <p class="text-xs text-gray-400">Respiration apaisante. 5min.</p>
             </button>
@@ -231,7 +237,7 @@
 
         <div class="bg-gray-900/80 p-3 rounded border border-gray-700 mb-2 shadow-lg shrink-0">
             <div class="flex items-center gap-2 mb-1 text-yellow-400 font-bold">
-                <span class="text-base">ℹ️</span> <span>LA SCIENCE</span>
+                <span class="text-base">ℹ️</span> <span>INFO</span>
             </div>
             <p id="setup-science-text" class="text-xs text-gray-300 leading-tight">
                 <!-- JS Inject -->
@@ -287,6 +293,11 @@
                 <div id="timer-sub-display" class="text-3xl mt-4 text-gray-400 font-bold uppercase tracking-[0.3em]">
                     SECONDES
                 </div>
+                
+                <!-- LISTE DES TOURS (Visible uniquement en mode Running) -->
+                <div id="laps-container" class="w-full hidden-force mt-4 space-y-2 max-h-40 overflow-y-auto">
+                    <!-- JS Injected Laps -->
+                </div>
             </div>
 
             <!-- Boutons -->
@@ -296,6 +307,11 @@
                 </button>
                 <div id="controls-standard" class="flex gap-2 w-full">
                     <button id="btn-pause-toggle" onclick="app.togglePause()" class="btn-tactical flex-1 py-8 text-2xl bg-gray-800/90 border-gray-600">PAUSE</button>
+                </div>
+                <!-- Controls Course (Start/Stop + Lap) -->
+                <div id="controls-running" class="flex gap-4 w-full hidden-force">
+                    <button id="btn-lap" onclick="app.recordLap()" class="btn-tactical flex-1 py-8 text-2xl bg-blue-900/90 border-blue-500">TOUR</button>
+                    <button id="btn-stop-run" onclick="app.toggleRun()" class="btn-tactical flex-1 py-8 text-2xl bg-[var(--color-volt)] text-black border-none">START</button>
                 </div>
             </div>
 
@@ -310,22 +326,28 @@
                 if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
                 if (this.ctx.state === 'suspended') { this.ctx.resume(); }
             },
-            playTone: function(freq, type, duration) {
+            playTone: function(freq, type, duration, vol=0.5, attack=0.01, release=0.01) {
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                // Envelope
+                gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + attack);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration + release);
+                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + duration);
+                osc.stop(this.ctx.currentTime + duration + release);
             },
             beepHigh: function() { this.playTone(880, 'square', 0.1); },
             beepLow: function() { this.playTone(440, 'sine', 0.1); },
-            buzzer: function() { this.playTone(150, 'sawtooth', 0.8); }
+            buzzer: function() { this.playTone(150, 'sawtooth', 0.8); },
+            // SON ZEN MODIFIÉ: 432Hz (La naturel)
+            beepZen: function() { this.playTone(432, 'sine', 0.6, 0.3, 0.2, 0.5); }
         };
 
         const WakeLock = {
@@ -343,6 +365,7 @@
             tabata: { name: "TABATA 20/10", desc: "Le protocole original. 20s effort, 10s repos. Améliore aérobie et anaérobie.", work: 20, hold: 0, rest: 10, sets: 8, type: 'interval' },
             boxing: { name: "SPARRING PRO", desc: "3 min combat, 1 min repos. Gestion de l'effort sur la durée.", work: 180, hold: 0, rest: 60, sets: 12, type: 'interval' },
             lafay: { name: "MÉTHODE X", desc: "Temps d'effort libre (vos reps), repos strict. Idéal pour la musculation au poids de corps.", work: 0, hold: 0, rest: 25, sets: 6, type: 'manual' },
+            running: { name: "COURSE", desc: "Chronomètre simple avec gestion des tours. Comparez vos temps.", type: 'stopwatch' },
             custom: { name: "PERSONNALISÉ", desc: "Réglez vos temps. Mettez une valeur à 0 pour désactiver cette phase.", work: 30, hold: 0, rest: 30, sets: 5, type: 'interval' },
             coherence: { name: "RETOUR AU CALME", desc: "Respiration apaisante. 5s inspi / 5s expi. Apaise le système nerveux sur 5min.", work: 5, hold: 0, rest: 5, sets: 30, type: 'interval' }
         };
@@ -350,7 +373,8 @@
         const app = {
             state: {
                 currentScreen: 'screen-disclaimer', mode: null, config: {}, running: false, paused: false,
-                phase: 'ready', timeLeft: 0, totalTime: 0, currentSet: 1, intervalId: null
+                phase: 'ready', timeLeft: 0, totalTime: 0, currentSet: 1, intervalId: null,
+                elapsedTime: 0, laps: [] 
             },
 
             showScreen: function(screenId) {
@@ -390,17 +414,17 @@
 
                 if (this.state.config.type === 'interval') {
                     if(this.state.mode === 'coherence') {
-                        controls.innerHTML += createInput("INSPIRER (s)", 'work', this.state.config.work, 1);
-                        controls.innerHTML += createInput("MAINTENIR (s)", 'hold', this.state.config.hold, 1);
-                        controls.innerHTML += createInput("EXPIRER (s)", 'rest', this.state.config.rest, 1);
+                        controls.innerHTML += createInput("INSPIRER", 'work', this.state.config.work, 1);
+                        controls.innerHTML += createInput("MAINTENIR", 'hold', this.state.config.hold, 1);
+                        controls.innerHTML += createInput("EXPIRER", 'rest', this.state.config.rest, 1);
                         controls.innerHTML += createInput("CYCLES", 'sets', this.state.config.sets, 5);
                     } else {
-                        controls.innerHTML += createInput("EFFORT (s)", 'work', this.state.config.work, 5);
-                        controls.innerHTML += createInput("REPOS (s)", 'rest', this.state.config.rest, 5);
+                        controls.innerHTML += createInput("EFFORT", 'work', this.state.config.work, 5);
+                        controls.innerHTML += createInput("REPOS", 'rest', this.state.config.rest, 5);
                         controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
                     }
                 } else if (this.state.config.type === 'manual') {
-                    controls.innerHTML += createInput("REPOS (s)", 'rest', this.state.config.rest, 5);
+                    controls.innerHTML += createInput("REPOS", 'rest', this.state.config.rest, 5);
                     controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
                 }
 
@@ -443,6 +467,14 @@
                 WakeLock.request();
                 this.state.currentSet = 1;
                 this.state.paused = false;
+                this.state.elapsedTime = 0;
+                this.state.laps = [];
+                
+                document.getElementById('laps-container').classList.add('hidden-force');
+                document.getElementById('laps-container').innerHTML = '';
+                document.getElementById('timer-round-counter').classList.remove('hidden-force');
+                document.getElementById('reps-visualizer').classList.remove('hidden-force');
+                document.getElementById('controls-running').classList.add('hidden-force');
                 
                 const btnPause = document.getElementById('btn-pause-toggle');
                 if(btnPause) {
@@ -452,13 +484,78 @@
                 }
 
                 this.showScreen('screen-timer');
-                this.setupVisualizer();
 
-                if (this.state.config.type === 'manual') this.setPhase('manual_work');
-                else this.setPhase('get_ready');
+                if (this.state.config.type === 'stopwatch') {
+                    this.state.running = false; 
+                    document.getElementById('timer-phase-label').innerText = "CHRONO";
+                    document.getElementById('timer-round-counter').classList.add('hidden-force');
+                    document.getElementById('reps-visualizer').classList.add('hidden-force');
+                    document.getElementById('timer-display').innerText = "0.0";
+                    document.getElementById('timer-sub-display').innerText = "SECONDES";
+                    
+                    document.getElementById('controls-standard').classList.add('hidden-force');
+                    document.getElementById('main-action-btn').classList.add('hidden-force');
+                    document.getElementById('controls-running').classList.remove('hidden-force');
+                    document.getElementById('laps-container').classList.remove('hidden-force');
+                    
+                    const btnStop = document.getElementById('btn-stop-run');
+                    btnStop.innerText = "START";
+                    btnStop.classList.remove('bg-red-600');
+                    btnStop.classList.add('bg-[var(--color-volt)]');
+                } 
+                else {
+                    this.setupVisualizer();
+                    document.getElementById('controls-standard').classList.remove('hidden-force');
+                    if (this.state.config.type === 'manual') this.setPhase('manual_work');
+                    else this.setPhase('get_ready');
+                }
             },
 
+            // --- STOPWATCH LOGIC ---
+            toggleRun: function() {
+                const btn = document.getElementById('btn-stop-run');
+                if (!this.state.running) {
+                    this.state.running = true;
+                    btn.innerText = "STOP";
+                    btn.classList.remove('bg-[var(--color-volt)]');
+                    btn.classList.add('bg-red-600');
+                    this.state.intervalId = setInterval(() => {
+                        this.state.elapsedTime += 0.1;
+                        document.getElementById('timer-display').innerText = this.state.elapsedTime.toFixed(1);
+                    }, 100);
+                } else {
+                    clearInterval(this.state.intervalId);
+                    this.state.running = false;
+                    btn.innerText = "START";
+                    btn.classList.remove('bg-red-600');
+                    btn.classList.add('bg-[var(--color-volt)]');
+                }
+            },
+
+            recordLap: function() {
+                if (this.state.laps.length >= 6) return;
+                
+                const time = this.state.elapsedTime.toFixed(1);
+                this.state.laps.push(time);
+                
+                const div = document.createElement('div');
+                div.className = "flex justify-between bg-gray-800 p-2 rounded text-lg font-mono border border-gray-600 text-white";
+                div.innerHTML = `<span>TOUR ${this.state.laps.length}</span><span class="text-neon-volt">${time}s</span>`;
+                document.getElementById('laps-container').prepend(div);
+            },
+
+            // --- INTERVAL LOGIC ---
             setPhase: function(phase) {
+                const barLeft = document.getElementById('visual-bar-left');
+                const barRight = document.getElementById('visual-bar-right');
+                barLeft.classList.add('no-transition');
+                barRight.classList.add('no-transition');
+                barLeft.style.height = '100%';
+                barRight.style.height = '100%';
+                barLeft.offsetHeight; 
+                barLeft.classList.remove('no-transition');
+                barRight.classList.remove('no-transition');
+
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
                 if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
@@ -478,9 +575,7 @@
                     this.state.timeLeft = 5; this.state.totalTime = 5;
                     phaseLabel.innerText = "PRÉPAREZ-VOUS"; phaseLabel.className = "text-3xl font-bold uppercase text-blue-400";
                     display.classList.add('text-white');
-                    // CORRECTION: On force le sous-texte à "ATTENTION" ou "PRÊT ?" au lieu de garder le texte précédent
                     subDisplay.innerText = "ATTENTION";
-                    
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
                     this.runTimer();
                 }
@@ -490,12 +585,20 @@
                         phaseLabel.innerText = "INSPIRER"; 
                         subDisplay.innerText = "INSPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
-                    } else {
+                        AudioEngine.beepZen(); 
+                    } 
+                    else if (this.state.mode === 'boxing') {
+                        // SPARRING SPECIAL TEXT
+                        phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                        subDisplay.innerText = "FIGHT";
+                        AudioEngine.beepHigh();
+                    }
+                    else {
                         phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
                         subDisplay.innerText = "TRAVAIL";
+                        AudioEngine.beepHigh(); 
                     }
                     display.classList.add('text-neon-volt'); 
-                    AudioEngine.beepHigh();
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
                     this.runTimer();
                 }
@@ -506,6 +609,8 @@
                     subDisplay.innerText = "BLOCAGE";
                     display.classList.add('text-white');
                     mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    
+                    if(this.state.mode === 'coherence') AudioEngine.beepZen(); 
                     this.runTimer();
                 }
                 else if (phase === 'manual_work') {
@@ -521,7 +626,7 @@
                         phaseLabel.innerText = "EXPIRER"; 
                         subDisplay.innerText = "EXPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
-                        AudioEngine.beepHigh(); 
+                        AudioEngine.beepZen(); 
                     } else {
                         phaseLabel.innerText = "RÉCUP."; 
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
@@ -553,7 +658,6 @@
                     if (this.state.timeLeft === 0) {
                          this.nextPhase();
                     } else {
-                        // CORRECTION: Suppression des bips 3-2-1
                         this.updateTimerDisplay();
                     }
                 }, 1000);
@@ -599,7 +703,10 @@
             },
 
             quitWorkout: function() {
-                if(confirm("Arrêter l'entraînement et revenir au menu ?")) {
+                let msg = "Arrêter l'entraînement et revenir au menu ?";
+                if(this.state.mode === 'running') msg = "Avez-vous fait une capture d'écran de vos temps ? \n\nConfirmez pour quitter.";
+                
+                if(confirm(msg)) {
                     this.stopTimerLoop();
                     WakeLock.release();
                     this.showScreen('screen-menu');
@@ -673,5 +780,3 @@
     </script>
 </body>
 </html>
-<!-- © 2025 Yoni Brd — All Rights Reserved -->
-

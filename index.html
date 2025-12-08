@@ -98,6 +98,15 @@
             z-index: 50;
             cursor: pointer;
         }
+        .btn-restart {
+            background: #00334a;
+            border: 2px solid #00C2FF;
+            color: #00C2FF;
+            font-family: var(--font-display);
+            box-shadow: 0 0 15px rgba(0, 194, 255, 0.3);
+            z-index: 50;
+            cursor: pointer;
+        }
 
         /* --- ANIMATIONS --- */
         @keyframes pulse-red {
@@ -184,8 +193,8 @@
         </button>
 
         <div class="copyright-footer-fixed">
-            Copyright © 2025 Yoni Brd. All rights reserved.<br>
-            Source code protected. Unauthorized reproduction or distribution is strictly prohibited.
+            Copyright © 2025 Yoni Brd. Tous droits réservés.<br>
+            Code source protégé. Reproduction interdite.
         </div>
     </div>
 
@@ -298,7 +307,12 @@
             
             <!-- Header -->
             <div class="w-full flex justify-between items-start mt-2">
-                <div class="text-left">
+                <!-- Bouton RESTART (Sauf Course) -->
+                <button id="btn-restart" onclick="app.restartWorkout()" class="btn-restart w-14 h-14 flex items-center justify-center text-3xl rounded shadow-lg active:scale-90 transition-transform font-bold mr-4" style="touch-action: manipulation;">
+                    ↻
+                </button>
+
+                <div class="text-left flex-1">
                     <div id="timer-phase-label" class="text-3xl font-bold uppercase text-gray-400 tracking-wider">EFFORT</div>
                     <div id="timer-round-counter" class="text-xl text-white mt-1 font-mono">SERIE 1 / 8</div>
                 </div>
@@ -312,23 +326,47 @@
 
             <!-- LE TIMER -->
             <div class="flex flex-col items-center justify-center my-auto w-full">
-                <div id="timer-display" class="font-display text-[32vw] leading-none text-neon-volt tabular-nums text-center drop-shadow-2xl">
+                <div id="timer-display" class="font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl">
                     00
                 </div>
                 <div id="timer-sub-display" class="text-3xl mt-4 text-gray-400 font-bold uppercase tracking-[0.3em]">
                     SECONDES
                 </div>
                 
-                <!-- LISTE DES TOURS (Visible uniquement en mode Running) -->
+                <!-- LISTE DES TOURS (Running) -->
                 <div id="laps-container" class="w-full hidden-force mt-4 space-y-2 max-h-40 overflow-y-auto"></div>
             </div>
 
             <!-- Boutons -->
             <div class="w-full mb-4">
+                
+                <!-- Standard Button (Tabata, Boxe) -->
                 <button id="main-action-btn" onclick="app.handleAction()" class="btn-tactical w-full py-8 text-3xl bg-gray-800 border-gray-500 rounded hidden-force shadow-2xl font-display">
                     FINI > REPOS
                 </button>
-                <div id="controls-standard" class="flex gap-2 w-full">
+
+                <!-- LAFAY TRIO BUTTONS -->
+                <div id="lafay-actions" class="flex flex-col gap-3 w-full hidden-force">
+                    <!-- REPOS REPS (Intra-série: Répétition suivante) -->
+                    <button onclick="app.handleLafayRest('reps')" class="btn-tactical w-full py-6 text-xl bg-orange-600 text-white border-none font-bold shadow-lg">
+                        <span class="block text-sm mr-2 opacity-75">REPOS REPS</span>
+                        <span id="label-rest-reps" class="font-display text-2xl">25s</span>
+                    </button>
+                    
+                    <!-- REPOS SERIES (Inter-série: Reset à 1) -->
+                    <div class="flex gap-3 w-full">
+                        <button onclick="app.handleLafayRest('short')" class="btn-tactical flex-1 py-8 text-xl bg-[var(--color-volt)] text-black border-none font-bold">
+                            <span class="block text-sm mb-1">SÉRIE FINIE</span>
+                            <span id="label-rest-short" class="font-display text-3xl">25s</span>
+                        </button>
+                        <button onclick="app.handleLafayRest('long')" class="btn-tactical flex-1 py-8 text-xl bg-blue-600 text-white border-none font-bold">
+                            <span class="block text-sm text-blue-200 mb-1">SÉRIE FINIE</span>
+                            <span id="label-rest-long" class="font-display text-3xl">180s</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="controls-standard" class="flex gap-2 w-full mt-2">
                     <button id="btn-pause-toggle" onclick="app.togglePause()" class="btn-tactical flex-1 py-8 text-2xl bg-gray-800/90 border-gray-600">PAUSE</button>
                 </div>
                 <!-- Controls Course -->
@@ -387,20 +425,21 @@
             release() { if (this.lock) { this.lock.release(); this.lock = null; } }
         };
 
+        // AJOUT: UNIT LABEL pour chaque mode
         const MODES = {
-            tabata: { name: "TABATA 20/10", desc: "Le protocole original. 20s effort, 10s repos. Améliore aérobie et anaérobie.", work: 20, hold: 0, rest: 10, sets: 8, type: 'interval' },
-            boxing: { name: "SPARRING PRO", desc: "3 min combat, 1 min repos. Gestion de l'effort sur la durée.", work: 180, hold: 0, rest: 60, sets: 12, type: 'interval' },
-            lafay: { name: "MÉTHODE X", desc: "Temps d'effort libre (vos reps), repos strict. Idéal pour la musculation au poids de corps.", work: 0, hold: 0, rest: 25, sets: 6, type: 'manual' },
+            tabata: { name: "TABATA 20/10", desc: "Le protocole original. 20s effort, 10s repos. Améliore aérobie et anaérobie.", work: 20, hold: 0, rest: 10, sets: 8, type: 'interval', unit: 'RÉPÉTITION' },
+            boxing: { name: "SPARRING PRO", desc: "3 min combat, 1 min repos. Gestion de l'effort sur la durée.", work: 180, hold: 0, rest: 60, sets: 12, type: 'interval', unit: 'ROUND' },
+            lafay: { name: "MÉTHODE X", desc: "Temps d'effort libre (vos reps), repos strict. Idéal pour la musculation au poids de corps.", work: 0, hold: 0, rest: 25, rest_reps: 25, rest_short: 25, rest_long: 180, sets: 6, type: 'manual', unit: 'RÉPÉTITION' },
             running: { name: "COURSE", desc: "Chronomètre simple avec gestion des tours. Comparez vos temps.", type: 'stopwatch' },
-            custom: { name: "PERSONNALISÉ", desc: "Réglez vos temps. Mettez une valeur à 0 pour désactiver cette phase.", work: 30, hold: 0, rest: 30, sets: 5, type: 'interval' },
-            coherence: { name: "RETOUR AU CALME", desc: "Respiration apaisante. 5s inspi / 5s expi. Apaise le système nerveux sur 5min.", work: 5, hold: 0, rest: 5, sets: 30, type: 'interval' }
+            custom: { name: "PERSONNALISÉ", desc: "Réglez vos temps. Mettez une valeur à 0 pour désactiver cette phase.", work: 30, hold: 0, rest: 30, sets: 5, type: 'interval', unit: 'RÉPÉTITION' },
+            coherence: { name: "RETOUR AU CALME", desc: "Respiration apaisante. 5s inspi / 5s expi. Apaise le système nerveux sur 5min.", work: 5, hold: 0, rest: 5, sets: 30, type: 'interval', unit: 'CYCLE' }
         };
 
         const app = {
             state: {
                 currentScreen: 'screen-disclaimer', mode: null, config: {}, running: false, paused: false,
                 phase: 'ready', timeLeft: 0, totalTime: 0, currentSet: 1, intervalId: null,
-                elapsedTime: 0, laps: [] 
+                elapsedTime: 0, laps: [], lafayAction: null // Pour suivre l'action en cours (reps vs reset)
             },
 
             showScreen: function(screenId) {
@@ -447,20 +486,29 @@
                         </div>
                     </div>`;
 
+                // ADAPTATION LABELS SELON MODE
+                let labelSets = "SÉRIES";
+                if(this.state.mode === 'boxing') labelSets = "ROUNDS";
+                else if(this.state.mode === 'coherence') labelSets = "CYCLES";
+                else labelSets = "RÉPÉTITIONS";
+
                 if (this.state.config.type === 'interval') {
                     if(this.state.mode === 'coherence') {
                         controls.innerHTML += createInput("INSPIRER", 'work', this.state.config.work, 1);
                         controls.innerHTML += createInput("MAINTENIR", 'hold', this.state.config.hold, 1);
                         controls.innerHTML += createInput("EXPIRER", 'rest', this.state.config.rest, 1);
-                        controls.innerHTML += createInput("CYCLES", 'sets', this.state.config.sets, 5);
+                        controls.innerHTML += createInput(labelSets, 'sets', this.state.config.sets, 5);
                     } else {
                         controls.innerHTML += createInput("EFFORT", 'work', this.state.config.work, 5);
                         controls.innerHTML += createInput("REPOS", 'rest', this.state.config.rest, 5);
-                        controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
+                        controls.innerHTML += createInput(labelSets, 'sets', this.state.config.sets, 1);
                     }
                 } else if (this.state.config.type === 'manual') {
-                    controls.innerHTML += createInput("REPOS", 'rest', this.state.config.rest, 5);
-                    controls.innerHTML += createInput("SÉRIES", 'sets', this.state.config.sets, 1);
+                    // LAFAY: 3 inputs pour les repos
+                    controls.innerHTML += createInput("REPOS REPS", 'rest_reps', this.state.config.rest_reps, 5);
+                    controls.innerHTML += createInput("REPOS 1", 'rest_short', this.state.config.rest_short, 5);
+                    controls.innerHTML += createInput("REPOS 2", 'rest_long', this.state.config.rest_long, 5);
+                    controls.innerHTML += createInput(labelSets, 'sets', this.state.config.sets, 1);
                 }
 
                 this.showScreen('screen-setup');
@@ -473,7 +521,7 @@
 
                 let newVal;
                 let min = 0; 
-                if (key === 'sets' || (key === 'work' && this.state.mode !== 'custom') || (key === 'rest' && this.state.mode !== 'custom')) min = 1;
+                if (key === 'sets' || (key === 'work' && this.state.mode !== 'custom') || (key === 'rest' && this.state.mode !== 'custom') || key.includes('rest_')) min = 1;
 
                 if (delta > 0) {
                     if (current === 1 && step === 5) newVal = 5;
@@ -504,12 +552,14 @@
                 this.state.paused = false;
                 this.state.elapsedTime = 0;
                 this.state.laps = [];
+                this.state.lafayAction = null; 
                 
                 document.getElementById('laps-container').classList.add('hidden-force');
                 document.getElementById('laps-container').innerHTML = '';
                 document.getElementById('timer-round-counter').classList.remove('hidden-force');
                 document.getElementById('reps-visualizer').classList.remove('hidden-force');
                 document.getElementById('controls-running').classList.add('hidden-force');
+                document.getElementById('btn-restart').classList.remove('hidden-force'); 
                 
                 const btnPause = document.getElementById('btn-pause-toggle');
                 if(btnPause) {
@@ -521,10 +571,12 @@
                 this.showScreen('screen-timer');
 
                 if (this.state.config.type === 'stopwatch') {
+                    // MODE COURSE
                     this.state.running = false; 
                     document.getElementById('timer-phase-label').innerText = "CHRONO";
                     document.getElementById('timer-round-counter').classList.add('hidden-force');
                     document.getElementById('reps-visualizer').classList.add('hidden-force');
+                    document.getElementById('btn-restart').classList.add('hidden-force'); 
                     
                     document.getElementById('sidebar-left-container').classList.add('hidden-force');
                     document.getElementById('sidebar-right-container').classList.add('hidden-force');
@@ -538,6 +590,7 @@
                     
                     document.getElementById('controls-standard').classList.add('hidden-force');
                     document.getElementById('main-action-btn').classList.add('hidden-force');
+                    document.getElementById('lafay-actions').classList.add('hidden-force'); 
                     document.getElementById('controls-running').classList.remove('hidden-force');
                     document.getElementById('laps-container').classList.remove('hidden-force');
                     
@@ -556,8 +609,22 @@
 
                     this.setupVisualizer();
                     document.getElementById('controls-standard').classList.remove('hidden-force');
+                    
+                    if (this.state.mode === 'lafay') {
+                        document.getElementById('label-rest-reps').innerText = this.state.config.rest_reps + "s";
+                        document.getElementById('label-rest-short').innerText = this.state.config.rest_short + "s";
+                        document.getElementById('label-rest-long').innerText = this.state.config.rest_long + "s";
+                    }
+
                     if (this.state.config.type === 'manual') this.setPhase('manual_work');
                     else this.setPhase('get_ready');
+                }
+            },
+
+            restartWorkout: function() {
+                if(confirm("Recommencer la séance depuis le début ?")) {
+                    this.stopTimerLoop();
+                    this.startWorkout();
                 }
             },
 
@@ -612,7 +679,6 @@
                 barLeft.classList.remove('no-transition');
                 barRight.classList.remove('no-transition');
 
-                // SKIP LOGIC
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
                 if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
@@ -620,6 +686,7 @@
                 this.state.phase = phase;
                 const phaseLabel = document.getElementById('timer-phase-label');
                 const mainBtn = document.getElementById('main-action-btn');
+                const lafayBtns = document.getElementById('lafay-actions');
                 const stdControls = document.getElementById('controls-standard');
                 const display = document.getElementById('timer-display');
                 const subDisplay = document.getElementById('timer-sub-display');
@@ -633,7 +700,9 @@
                     phaseLabel.innerText = "PRÉPAREZ-VOUS"; phaseLabel.className = "text-3xl font-bold uppercase text-blue-400";
                     display.classList.add('text-white');
                     subDisplay.innerText = "ATTENTION";
-                    mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    mainBtn.classList.add('hidden-force'); 
+                    lafayBtns.classList.add('hidden-force');
+                    stdControls.classList.remove('hidden-force');
                     this.runTimer();
                 }
                 else if (phase === 'work') {
@@ -655,7 +724,9 @@
                         AudioEngine.beepHigh(); 
                     }
                     display.classList.add('text-neon-volt'); 
-                    mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    mainBtn.classList.add('hidden-force');
+                    lafayBtns.classList.add('hidden-force'); 
+                    stdControls.classList.remove('hidden-force');
                     this.runTimer();
                 }
                 else if (phase === 'hold') {
@@ -664,16 +735,31 @@
                     phaseLabel.className = "text-3xl font-bold uppercase text-white";
                     subDisplay.innerText = "BLOCAGE";
                     display.classList.add('text-white');
-                    mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    mainBtn.classList.add('hidden-force'); 
+                    lafayBtns.classList.add('hidden-force');
+                    stdControls.classList.remove('hidden-force');
                     
                     if(this.state.mode === 'coherence') AudioEngine.zenHold(); 
                     this.runTimer();
                 }
                 else if (phase === 'manual_work') {
-                    phaseLabel.innerText = `SÉRIE ${this.state.currentSet}`; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                    // MODIFICATION LAFAY / MANUAL: "RÉPÉTITION" au lieu de "SÉRIE" si nécessaire
+                    const unitLabel = this.state.config.unit || "SÉRIE";
+                    phaseLabel.innerText = "EFFORT"; 
+                    phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
                     display.innerText = "GO"; display.classList.add('text-neon-volt'); subDisplay.innerText = "FAITES VOS REPS";
-                    mainBtn.innerText = "SÉRIE TERMINÉE > REPOS"; mainBtn.className = "btn-tactical w-full py-10 text-2xl bg-[var(--color-volt)] text-black border-none rounded animate-pulse shadow-[0_0_30px_#CCFF00]";
-                    mainBtn.classList.remove('hidden-force'); stdControls.classList.add('hidden-force');
+                    
+                    if (this.state.mode === 'lafay') {
+                        mainBtn.classList.add('hidden-force');
+                        lafayBtns.classList.remove('hidden-force');
+                    } else {
+                        mainBtn.innerText = "SÉRIE TERMINÉE > REPOS"; 
+                        mainBtn.className = "btn-tactical w-full py-10 text-2xl bg-[var(--color-volt)] text-black border-none rounded animate-pulse shadow-[0_0_30px_#CCFF00]";
+                        mainBtn.classList.remove('hidden-force');
+                        lafayBtns.classList.add('hidden-force');
+                    }
+                    
+                    stdControls.classList.add('hidden-force');
                     AudioEngine.beepHigh(); this.stopTimerLoop();
                 }
                 else if (phase === 'rest') {
@@ -690,7 +776,9 @@
                         AudioEngine.buzzer(); 
                     }
                     display.classList.add('text-neon-alert'); 
-                    mainBtn.classList.add('hidden-force'); stdControls.classList.remove('hidden-force');
+                    mainBtn.classList.add('hidden-force'); 
+                    lafayBtns.classList.add('hidden-force');
+                    stdControls.classList.remove('hidden-force');
                     document.body.classList.add('animate-alert');
                     this.runTimer();
                 }
@@ -699,11 +787,25 @@
                     AudioEngine.playTone(600, 'square', 0.1); setTimeout(() => AudioEngine.playTone(800, 'square', 0.2), 150);
                     document.body.classList.remove('animate-alert');
                     
-                    // FIX: Stop and Release immediately
                     this.stopTimerLoop(); 
                     WakeLock.release();
                 }
                 this.updateUI();
+            },
+
+            // SPECIFIC LAFAY
+            handleLafayRest: function(type) {
+                if (type === 'reps') {
+                    this.state.config.rest = this.state.config.rest_reps;
+                    this.state.lafayAction = 'next_rep'; // FLAG : On incrémente
+                } else if (type === 'short') {
+                    this.state.config.rest = this.state.config.rest_short;
+                    this.state.lafayAction = 'reset_series'; // FLAG : On reset
+                } else {
+                    this.state.config.rest = this.state.config.rest_long;
+                    this.state.lafayAction = 'reset_series'; // FLAG : On reset
+                }
+                this.nextPhase();
             },
 
             runTimer: function() {
@@ -713,7 +815,6 @@
                 this.state.intervalId = setInterval(() => {
                     if (this.state.paused) return;
                     
-                    // FIX: Double security check
                     if (this.state.phase === 'finished') {
                         this.stopTimerLoop();
                         return;
@@ -732,7 +833,7 @@
             stopTimerLoop: function() {
                 if (this.state.intervalId) {
                     clearInterval(this.state.intervalId);
-                    this.state.intervalId = null; // FIX: Nullify ID
+                    this.state.intervalId = null; 
                 }
                 this.state.running = false;
                 document.body.classList.remove('animate-alert');
@@ -753,11 +854,31 @@
                 }
                 else if (this.state.phase === 'manual_work') this.setPhase('rest');
                 else if (this.state.phase === 'rest') {
-                    if (this.state.currentSet < conf.sets) {
-                        this.state.currentSet++;
-                        if (conf.type === 'manual') this.setPhase('manual_work');
-                        else this.setPhase('work');
-                    } else this.setPhase('finished');
+                    
+                    // LOGIQUE LAFAY SPÉCIFIQUE
+                    if(this.state.mode === 'lafay') {
+                        if(this.state.lafayAction === 'reset_series') {
+                            this.state.currentSet = 1; // RESET
+                            this.setPhase('manual_work');
+                        } else {
+                            // NEXT REP
+                            if (this.state.currentSet < conf.sets) {
+                                this.state.currentSet++;
+                                this.setPhase('manual_work');
+                            } else {
+                                this.setPhase('finished');
+                            }
+                        }
+                        this.state.lafayAction = null; // Clear flag
+                    }
+                    // LOGIQUE STANDARD
+                    else {
+                        if (this.state.currentSet < conf.sets) {
+                            this.state.currentSet++;
+                            if (conf.type === 'manual') this.setPhase('manual_work');
+                            else this.setPhase('work');
+                        } else this.setPhase('finished');
+                    }
                 }
             },
 
@@ -783,7 +904,6 @@
             },
 
             updateTimerDisplay: function() {
-                // FIX: Guard against finished state
                 if (this.state.phase === 'finished') return;
 
                 const display = document.getElementById('timer-display');
@@ -831,7 +951,10 @@
                 const isCompact = this.state.config.sets > 15;
                 const sizeClass = isCompact ? 'w-4 h-4' : 'w-8 h-8';
                 
-                document.getElementById('timer-round-counter').innerText = `SÉRIE ${this.state.currentSet} / ${this.state.config.sets}`;
+                // UTILISATION DE L'UNITÉ DÉFINIE DANS LE MODE
+                const unit = this.state.config.unit || "SÉRIE";
+                document.getElementById('timer-round-counter').innerText = `${unit} ${this.state.currentSet} / ${this.state.config.sets}`;
+                
                 for(let i=1; i<=this.state.config.sets; i++) {
                     const box = document.getElementById(`rep-box-${i}`);
                     if (i < this.state.currentSet) box.className = `${sizeClass} bg-gray-600 rounded-sm opacity-50`;
@@ -852,4 +975,3 @@
     </script>
 </body>
 </html>
-

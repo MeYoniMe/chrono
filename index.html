@@ -29,6 +29,7 @@
             --color-volt: #CCFF00;
             --color-alert: #FF3333;
             --color-rest: #00C2FF;
+            --color-zen: #d946ef; /* Fuchsia-500 pour le mode Zen */
             --color-white: #ffffff;
             --font-tactical: 'Chakra Petch', sans-serif;
             --font-display: 'Black Ops One', cursive;
@@ -60,9 +61,9 @@
         /* --- TYPOGRAPHIE --- */
         .text-neon-volt { color: var(--color-volt); text-shadow: 0 0 15px rgba(204, 255, 0, 0.6); }
         .text-neon-alert { color: var(--color-alert); text-shadow: 0 0 15px rgba(255, 51, 51, 0.6); }
+        .text-neon-zen { color: var(--color-zen); text-shadow: 0 0 20px rgba(217, 70, 239, 0.8); }
         
         .font-display { font-family: var(--font-display); letter-spacing: 2px; }
-        
         .font-tech { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: bold; }
 
         /* --- UI ELEMENTS --- */
@@ -162,7 +163,7 @@
         <p class="text-gray-400 text-sm px-8">Pour une meilleure expérience tactique,<br>veuillez tourner votre appareil.</p>
     </div>
 
-    <!-- AUDIO HACK -->
+    <!-- AUDIO HACK : MOTEUR ANTI-VEILLE IOS -->
     <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;">
         <source src="data:audio/mp3;base64,//MkxAA........" type="audio/mpeg">
     </audio>
@@ -265,7 +266,7 @@
     <!-- ========================================= -->
     <div id="screen-setup" class="w-full h-full flex flex-col p-3 hidden-force pt-10 max-w-md mx-auto pb-2 overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
-            <button onclick="app.showScreen('screen-menu')" class="text-gray-400 text-sm font-bold border border-gray-600 px-3 py-2 rounded active:bg-gray-800">< RETOUR</button>
+            <button onclick="app.showScreen('screen-menu')" class="text-gray-400 text-xs font-bold border border-gray-600 w-10 h-10 flex items-center justify-center rounded active:bg-gray-800"><</button>
             <h2 id="setup-title" class="text-xl font-display text-white text-right truncate ml-2">REGLAGES</h2>
         </div>
 
@@ -289,9 +290,7 @@
         </div>
     </div>
 
-    <!-- ========================================= -->
-    <!-- ECRAN 4: CHRONO ACTIF                     -->
-    <!-- ========================================= -->
+    <!-- ECRAN 4: CHRONO -->
     <div id="screen-timer" class="w-full h-full flex flex-col hidden-force relative bg-black">
         
         <!-- Barres Latérales -->
@@ -302,13 +301,11 @@
             <div id="visual-bar-right" class="w-full bg-white transition-all duration-1000 ease-linear absolute bottom-0 h-full"></div>
         </div>
 
-        <!-- Contenu Central -->
+        <!-- Contenu -->
         <div class="flex-1 flex flex-col items-center justify-between py-6 px-12 z-10 w-full max-w-2xl mx-auto">
             
-            <!-- Header -->
             <div class="w-full flex justify-between items-start mt-2">
-                <!-- Bouton RESTART (Sauf Course) -->
-                <button id="btn-restart" onclick="app.restartWorkout()" class="btn-restart w-14 h-14 flex items-center justify-center text-3xl rounded shadow-lg active:scale-90 transition-transform font-bold mr-4" style="touch-action: manipulation;">
+                <button id="btn-restart" onclick="app.restartWorkout()" class="btn-restart w-10 h-10 flex items-center justify-center text-xl rounded shadow-lg active:scale-90 transition-transform font-bold mr-4" style="touch-action: manipulation;">
                     ↻
                 </button>
 
@@ -316,15 +313,13 @@
                     <div id="timer-phase-label" class="text-3xl font-bold uppercase text-gray-400 tracking-wider">EFFORT</div>
                     <div id="timer-round-counter" class="text-xl text-white mt-1 font-mono">SERIE 1 / 8</div>
                 </div>
-                <button onclick="app.quitWorkout()" class="btn-close w-14 h-14 flex items-center justify-center text-3xl rounded shadow-lg active:scale-90 transition-transform font-bold" style="touch-action: manipulation;">
+                <button onclick="app.quitWorkout()" class="btn-close w-10 h-10 flex items-center justify-center text-xl rounded shadow-lg active:scale-90 transition-transform font-bold" style="touch-action: manipulation;">
                     X
                 </button>
             </div>
 
-            <!-- Visualizer -->
             <div id="reps-visualizer" class="flex gap-2 mt-6 w-full flex-wrap justify-center opacity-90"></div>
 
-            <!-- LE TIMER -->
             <div class="flex flex-col items-center justify-center my-auto w-full">
                 <div id="timer-display" class="font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl">
                     00
@@ -333,27 +328,22 @@
                     SECONDES
                 </div>
                 
-                <!-- LISTE DES TOURS (Running) -->
                 <div id="laps-container" class="w-full hidden-force mt-4 space-y-2 max-h-40 overflow-y-auto"></div>
             </div>
 
-            <!-- Boutons -->
             <div class="w-full mb-4">
-                
-                <!-- Standard Button (Tabata, Boxe) -->
                 <button id="main-action-btn" onclick="app.handleAction()" class="btn-tactical w-full py-8 text-3xl bg-gray-800 border-gray-500 rounded hidden-force shadow-2xl font-display">
                     FINI > REPOS
                 </button>
 
-                <!-- LAFAY TRIO BUTTONS -->
+                <!-- LAFAY ACTIONS (3 BOUTONS) -->
                 <div id="lafay-actions" class="flex flex-col gap-3 w-full hidden-force">
-                    <!-- REPOS REPS (Intra-série: Répétition suivante) -->
+                    <!-- REPOS REPS (Orange - Incrémente Reps) -->
                     <button onclick="app.handleLafayRest('reps')" class="btn-tactical w-full py-6 text-xl bg-orange-600 text-white border-none font-bold shadow-lg">
                         <span class="block text-sm mr-2 opacity-75">REPOS REPS</span>
                         <span id="label-rest-reps" class="font-display text-2xl">25s</span>
                     </button>
-                    
-                    <!-- REPOS SERIES (Inter-série: Reset à 1) -->
+                    <!-- REPOS SERIES (Vert/Bleu - Reset à 1) -->
                     <div class="flex gap-3 w-full">
                         <button onclick="app.handleLafayRest('short')" class="btn-tactical flex-1 py-8 text-xl bg-[var(--color-volt)] text-black border-none font-bold">
                             <span class="block text-sm mb-1">SÉRIE FINIE</span>
@@ -369,7 +359,6 @@
                 <div id="controls-standard" class="flex gap-2 w-full mt-2">
                     <button id="btn-pause-toggle" onclick="app.togglePause()" class="btn-tactical flex-1 py-8 text-2xl bg-gray-800/90 border-gray-600">PAUSE</button>
                 </div>
-                <!-- Controls Course -->
                 <div id="controls-running" class="flex gap-4 w-full hidden-force">
                     <button id="btn-lap" onclick="app.recordLap()" class="btn-tactical flex-1 py-8 text-2xl bg-blue-900/90 border-blue-500">TOUR</button>
                     <button id="btn-stop-run" onclick="app.toggleRun()" class="btn-tactical flex-1 py-8 text-2xl bg-[var(--color-volt)] text-black border-none">START</button>
@@ -388,30 +377,59 @@
                 if (this.ctx.state === 'suspended') { this.ctx.resume(); }
             },
             
-            playBell: function(freq, type='sine', duration=1.5, vol=0.8) {
+            // SON CLOCHE (Sawtooth pour le métal agressif)
+            playBell: function(freq, type='sawtooth', duration=1.5, vol=1.0) { 
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                
                 const now = this.ctx.currentTime;
                 gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(vol, now + 0.01); 
-                gain.gain.exponentialRampToValueAtTime(0.001, now + duration); 
-                
+                gain.gain.linearRampToValueAtTime(vol, now + 0.02); // Attaque rapide
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Longue résonance
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start(now);
                 osc.stop(now + duration);
             },
 
-            beepHigh: function() { this.playBell(880, 'sine', 1.5, 0.8); }, 
-            buzzer: function() { this.playBell(440, 'triangle', 1.5, 0.6); }, 
-            zenInhale: function() { this.playBell(432, 'sine', 3.0, 0.5); },   
-            zenHold: function() { this.playBell(528, 'sine', 2.5, 0.4); },     
-            zenExhale: function() { this.playBell(324, 'sine', 3.5, 0.6); }    
+            beepCountdown: function() { this.playBell(1000, 'square', 0.15, 0.6); }, // Countdown sec
+            
+            beepTabataStart: function() { 
+                this.playBell(1000, 'sawtooth', 2.0, 1.0); // Gong long
+            },
+
+            beepTripleStart: function() { 
+                // Triple gong aigu rapide (DING DING DING)
+                const freq = 1046;
+                setTimeout(() => this.playBell(freq, 'sawtooth', 0.4, 1.0), 0);
+                setTimeout(() => this.playBell(freq, 'sawtooth', 0.4, 1.0), 200);
+                setTimeout(() => this.playBell(freq, 'sawtooth', 1.2, 1.0), 400);
+            },
+
+            beepRoundEnd: function() {
+                // STOP SPARRING / START REST: Dong Dong Dong MEDIUM
+                const freq = 784; 
+                setTimeout(() => this.playBell(freq, 'sawtooth', 0.6, 1.0), 0);
+                setTimeout(() => this.playBell(freq, 'sawtooth', 0.6, 1.0), 400);
+                setTimeout(() => this.playBell(freq, 'sawtooth', 1.5, 1.0), 800);
+            },
+
+            beepEndFight: function() {
+                // FIN DE SEANCE: Dong Dong Dong GRAVE
+                const freq = 523;
+                setTimeout(() => this.playBell(freq, 'sawtooth', 0.8, 1.0), 0);
+                setTimeout(() => this.playBell(freq, 'sawtooth', 0.8, 1.0), 500);
+                setTimeout(() => this.playBell(freq, 'sawtooth', 2.5, 1.0), 1000);
+            },
+
+            beepHigh: function() { this.playBell(880, 'sine', 1.5, 1.0); }, 
+            buzzer: function() { this.playBell(440, 'triangle', 1.5, 0.8); }, 
+            
+            zenInhale: function() { this.playBell(432, 'sine', 3.0, 0.6); },   
+            zenHold: function() { this.playBell(528, 'sine', 2.5, 0.5); },     
+            zenExhale: function() { this.playBell(324, 'sine', 3.5, 0.7); }    
         };
 
         const WakeLock = {
@@ -425,7 +443,6 @@
             release() { if (this.lock) { this.lock.release(); this.lock = null; } }
         };
 
-        // AJOUT: UNIT LABEL pour chaque mode
         const MODES = {
             tabata: { name: "TABATA 20/10", desc: "Le protocole original. 20s effort, 10s repos. Améliore aérobie et anaérobie.", work: 20, hold: 0, rest: 10, sets: 8, type: 'interval', unit: 'RÉPÉTITION' },
             boxing: { name: "SPARRING PRO", desc: "3 min combat, 1 min repos. Gestion de l'effort sur la durée.", work: 180, hold: 0, rest: 60, sets: 12, type: 'interval', unit: 'ROUND' },
@@ -439,7 +456,7 @@
             state: {
                 currentScreen: 'screen-disclaimer', mode: null, config: {}, running: false, paused: false,
                 phase: 'ready', timeLeft: 0, totalTime: 0, currentSet: 1, intervalId: null,
-                elapsedTime: 0, laps: [], lafayAction: null // Pour suivre l'action en cours (reps vs reset)
+                elapsedTime: 0, laps: [], lafayAction: null
             },
 
             showScreen: function(screenId) {
@@ -486,7 +503,6 @@
                         </div>
                     </div>`;
 
-                // ADAPTATION LABELS SELON MODE
                 let labelSets = "SÉRIES";
                 if(this.state.mode === 'boxing') labelSets = "ROUNDS";
                 else if(this.state.mode === 'coherence') labelSets = "CYCLES";
@@ -504,7 +520,6 @@
                         controls.innerHTML += createInput(labelSets, 'sets', this.state.config.sets, 1);
                     }
                 } else if (this.state.config.type === 'manual') {
-                    // LAFAY: 3 inputs pour les repos
                     controls.innerHTML += createInput("REPOS REPS", 'rest_reps', this.state.config.rest_reps, 5);
                     controls.innerHTML += createInput("REPOS 1", 'rest_short', this.state.config.rest_short, 5);
                     controls.innerHTML += createInput("REPOS 2", 'rest_long', this.state.config.rest_long, 5);
@@ -671,13 +686,25 @@
             setPhase: function(phase) {
                 const barLeft = document.getElementById('visual-bar-left');
                 const barRight = document.getElementById('visual-bar-right');
-                barLeft.classList.add('no-transition');
-                barRight.classList.add('no-transition');
-                barLeft.style.height = '100%';
-                barRight.style.height = '100%';
+                barLeft.style.transition = 'none';
+                barRight.style.transition = 'none';
+                
+                if (this.state.mode === 'coherence') {
+                    if (phase === 'work') { 
+                        barLeft.style.height = '0%'; barRight.style.height = '0%';
+                    } else if (phase === 'rest') { 
+                        barLeft.style.height = '100%'; barRight.style.height = '100%';
+                    }
+                } else {
+                    barLeft.style.height = '100%'; barRight.style.height = '100%';
+                }
+                
                 barLeft.offsetHeight; 
-                barLeft.classList.remove('no-transition');
-                barRight.classList.remove('no-transition');
+                
+                if (this.state.mode !== 'coherence') {
+                    barLeft.style.transition = 'height 1s linear';
+                    barRight.style.transition = 'height 1s linear';
+                }
 
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
@@ -693,12 +720,15 @@
                 
                 document.body.style.backgroundColor = '#000';
                 display.className = "font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl";
-                display.classList.remove('text-white', 'text-neon-volt', 'text-neon-alert'); 
+                display.classList.remove('text-white', 'text-neon-volt', 'text-neon-alert', 'text-neon-zen'); 
+                
+                const zenColorClass = (this.state.mode === 'coherence') ? 'text-neon-zen' : 'text-white';
                 
                 if (phase === 'get_ready') {
-                    this.state.timeLeft = 5; this.state.totalTime = 5;
+                    this.state.timeLeft = 10; 
+                    this.state.totalTime = 10;
                     phaseLabel.innerText = "PRÉPAREZ-VOUS"; phaseLabel.className = "text-3xl font-bold uppercase text-blue-400";
-                    display.classList.add('text-white');
+                    display.classList.add(zenColorClass);
                     subDisplay.innerText = "ATTENTION";
                     mainBtn.classList.add('hidden-force'); 
                     lafayBtns.classList.add('hidden-force');
@@ -710,20 +740,36 @@
                     if(this.state.mode === 'coherence') {
                         phaseLabel.innerText = "INSPIRER"; 
                         subDisplay.innerText = "INSPIRER";
-                        phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
-                        AudioEngine.zenInhale(); 
+                        phaseLabel.className = "text-3xl font-bold uppercase text-neon-zen";
+                        display.classList.add('text-neon-zen');
+                        AudioEngine.zenInhale();
+                        
+                        barLeft.style.transition = `height ${this.state.totalTime}s linear`;
+                        barRight.style.transition = `height ${this.state.totalTime}s linear`;
+                        setTimeout(() => { 
+                            barLeft.style.height = '100%';
+                            barRight.style.height = '100%';
+                        }, 50);
                     } 
-                    else if (this.state.mode === 'boxing') {
-                        phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
-                        subDisplay.innerText = "FIGHT";
-                        AudioEngine.beepHigh();
-                    }
                     else {
-                        phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
-                        subDisplay.innerText = "GO !";
-                        AudioEngine.beepHigh(); 
+                        if (this.state.mode === 'boxing') {
+                            phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                            subDisplay.innerText = "FIGHT";
+                            AudioEngine.beepTripleStart(); 
+                        }
+                        else if (this.state.mode === 'tabata') {
+                            phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                            subDisplay.innerText = "GO !";
+                            AudioEngine.beepTabataStart(); 
+                        }
+                        else {
+                            phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
+                            subDisplay.innerText = "GO !";
+                            AudioEngine.beepHigh(); 
+                        }
+                        display.classList.add('text-neon-volt'); 
                     }
-                    display.classList.add('text-neon-volt'); 
+                    
                     mainBtn.classList.add('hidden-force');
                     lafayBtns.classList.add('hidden-force'); 
                     stdControls.classList.remove('hidden-force');
@@ -732,18 +778,26 @@
                 else if (phase === 'hold') {
                     this.state.timeLeft = this.state.config.hold; this.state.totalTime = this.state.config.hold;
                     phaseLabel.innerText = "MAINTENIR"; 
-                    phaseLabel.className = "text-3xl font-bold uppercase text-white";
-                    subDisplay.innerText = "BLOCAGE";
-                    display.classList.add('text-white');
+                    
+                    if(this.state.mode === 'coherence') {
+                        phaseLabel.className = "text-3xl font-bold uppercase text-neon-zen";
+                        display.classList.add('text-neon-zen');
+                        subDisplay.innerText = "BLOCAGE";
+                        AudioEngine.zenHold();
+                        barLeft.style.height = '100%';
+                        barRight.style.height = '100%';
+                    } else {
+                        phaseLabel.className = "text-3xl font-bold uppercase text-white";
+                        display.classList.add('text-white');
+                        subDisplay.innerText = "BLOCAGE";
+                    }
+
                     mainBtn.classList.add('hidden-force'); 
                     lafayBtns.classList.add('hidden-force');
                     stdControls.classList.remove('hidden-force');
-                    
-                    if(this.state.mode === 'coherence') AudioEngine.zenHold(); 
                     this.runTimer();
                 }
                 else if (phase === 'manual_work') {
-                    // MODIFICATION LAFAY / MANUAL: "RÉPÉTITION" au lieu de "SÉRIE" si nécessaire
                     const unitLabel = this.state.config.unit || "SÉRIE";
                     phaseLabel.innerText = "EFFORT"; 
                     phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
@@ -767,15 +821,26 @@
                     if(this.state.mode === 'coherence') {
                         phaseLabel.innerText = "EXPIRER"; 
                         subDisplay.innerText = "EXPIRER";
-                        phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
+                        phaseLabel.className = "text-3xl font-bold uppercase text-neon-zen";
+                        display.classList.add('text-neon-zen');
                         AudioEngine.zenExhale(); 
+                        
+                        barLeft.style.transition = `height ${this.state.totalTime}s linear`;
+                        barRight.style.transition = `height ${this.state.totalTime}s linear`;
+                        setTimeout(() => {
+                            barLeft.style.height = '0%';
+                            barRight.style.height = '0%';
+                        }, 50);
                     } else {
                         phaseLabel.innerText = "RÉCUP."; 
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
                         subDisplay.innerText = "RÉCUP.";
-                        AudioEngine.buzzer(); 
+                        display.classList.add('text-neon-alert'); 
+                        
+                        if(this.state.mode === 'boxing') AudioEngine.beepRoundEnd(); // SON CLOCHE BOXE
+                        else AudioEngine.buzzer(); 
                     }
-                    display.classList.add('text-neon-alert'); 
+                    
                     mainBtn.classList.add('hidden-force'); 
                     lafayBtns.classList.add('hidden-force');
                     stdControls.classList.remove('hidden-force');
@@ -783,27 +848,33 @@
                     this.runTimer();
                 }
                 else if (phase === 'finished') {
-                    phaseLabel.innerText = "TERMINÉ"; display.innerText = "FIN"; display.classList.add('text-white'); subDisplay.innerText = "BRAVO";
-                    AudioEngine.playTone(600, 'square', 0.1); setTimeout(() => AudioEngine.playTone(800, 'square', 0.2), 150);
-                    document.body.classList.remove('animate-alert');
+                    phaseLabel.innerText = "TERMINÉ"; display.innerText = "FIN"; 
+                    display.classList.add(this.state.mode === 'coherence' ? 'text-neon-zen' : 'text-white');
+                    subDisplay.innerText = "BRAVO";
                     
+                    if(this.state.mode === 'boxing') {
+                        AudioEngine.beepEndFight(); 
+                    } else {
+                        AudioEngine.playBell(600, 'square', 0.5, 0.5); 
+                    }
+                    
+                    document.body.classList.remove('animate-alert');
                     this.stopTimerLoop(); 
                     WakeLock.release();
                 }
                 this.updateUI();
             },
 
-            // SPECIFIC LAFAY
             handleLafayRest: function(type) {
                 if (type === 'reps') {
                     this.state.config.rest = this.state.config.rest_reps;
-                    this.state.lafayAction = 'next_rep'; // FLAG : On incrémente
+                    this.state.lafayAction = 'next_rep'; 
                 } else if (type === 'short') {
                     this.state.config.rest = this.state.config.rest_short;
-                    this.state.lafayAction = 'reset_series'; // FLAG : On reset
+                    this.state.lafayAction = 'reset_series'; 
                 } else {
                     this.state.config.rest = this.state.config.rest_long;
-                    this.state.lafayAction = 'reset_series'; // FLAG : On reset
+                    this.state.lafayAction = 'reset_series'; 
                 }
                 this.nextPhase();
             },
@@ -825,6 +896,12 @@
                     if (this.state.timeLeft === 0) {
                          this.nextPhase();
                     } else {
+                        // BIP COMPTE A REBOURS
+                        if (this.state.mode === 'boxing' || this.state.mode === 'tabata') {
+                            if ((this.state.phase === 'get_ready' || this.state.phase === 'rest') && this.state.timeLeft <= 5 && this.state.timeLeft > 0) {
+                                AudioEngine.beepCountdown();
+                            }
+                        }
                         this.updateTimerDisplay();
                     }
                 }, 1000);
@@ -854,14 +931,11 @@
                 }
                 else if (this.state.phase === 'manual_work') this.setPhase('rest');
                 else if (this.state.phase === 'rest') {
-                    
-                    // LOGIQUE LAFAY SPÉCIFIQUE
                     if(this.state.mode === 'lafay') {
                         if(this.state.lafayAction === 'reset_series') {
-                            this.state.currentSet = 1; // RESET
+                            this.state.currentSet = 1; 
                             this.setPhase('manual_work');
                         } else {
-                            // NEXT REP
                             if (this.state.currentSet < conf.sets) {
                                 this.state.currentSet++;
                                 this.setPhase('manual_work');
@@ -869,9 +943,8 @@
                                 this.setPhase('finished');
                             }
                         }
-                        this.state.lafayAction = null; // Clear flag
+                        this.state.lafayAction = null; 
                     }
-                    // LOGIQUE STANDARD
                     else {
                         if (this.state.currentSet < conf.sets) {
                             this.state.currentSet++;
@@ -922,15 +995,21 @@
                 if (this.state.totalTime > 0) {
                     const percentage = (this.state.timeLeft / this.state.totalTime) * 100;
                     let barColor;
-                    if (this.state.phase === 'rest') barColor = 'var(--color-alert)';
-                    else if (this.state.phase === 'hold') barColor = 'white';
-                    else if (this.state.phase === 'get_ready') barColor = '#fff';
-                    else barColor = 'var(--color-volt)';
+                    
+                    if (this.state.mode === 'coherence') {
+                       // Pass (CSS handles smooth transition)
+                    } 
+                    else {
+                        if (this.state.phase === 'rest') barColor = 'var(--color-alert)';
+                        else if (this.state.phase === 'hold') barColor = 'white';
+                        else if (this.state.phase === 'get_ready') barColor = '#fff';
+                        else barColor = 'var(--color-volt)';
 
-                    document.getElementById('visual-bar-left').style.height = `${percentage}%`;
-                    document.getElementById('visual-bar-right').style.height = `${percentage}%`;
-                    document.getElementById('visual-bar-left').style.backgroundColor = barColor;
-                    document.getElementById('visual-bar-right').style.backgroundColor = barColor;
+                        document.getElementById('visual-bar-left').style.height = `${percentage}%`;
+                        document.getElementById('visual-bar-right').style.height = `${percentage}%`;
+                        document.getElementById('visual-bar-left').style.backgroundColor = barColor;
+                        document.getElementById('visual-bar-right').style.backgroundColor = barColor;
+                    }
                 }
             },
 
@@ -951,7 +1030,6 @@
                 const isCompact = this.state.config.sets > 15;
                 const sizeClass = isCompact ? 'w-4 h-4' : 'w-8 h-8';
                 
-                // UTILISATION DE L'UNITÉ DÉFINIE DANS LE MODE
                 const unit = this.state.config.unit || "SÉRIE";
                 document.getElementById('timer-round-counter').innerText = `${unit} ${this.state.currentSet} / ${this.state.config.sets}`;
                 

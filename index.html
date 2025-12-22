@@ -112,30 +112,6 @@
             z-index: 50;
             cursor: pointer;
         }
-        
-        .btn-sound {
-            font-family: var(--font-display);
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            padding: 6px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #444;
-            background: #1a1a1a;
-            color: #666;
-            text-transform: uppercase;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-sound.active {
-            background: rgba(204, 255, 0, 0.1);
-            border: 1px solid var(--color-volt);
-            color: var(--color-volt);
-            box-shadow: 0 0 10px rgba(204, 255, 0, 0.2);
-        }
 
         @keyframes pulse-red {
             0% { box-shadow: inset 0 0 0px #FF3333; }
@@ -209,15 +185,8 @@
     <div id="screen-menu" class="w-full h-full flex flex-col p-4 hidden-force pt-8">
         
         <!-- HEADER -->
-        <div class="flex flex-col items-center mb-4 mt-2 w-full max-w-md mx-auto">
+        <div class="flex flex-col items-center mb-6 mt-4 w-full max-w-md mx-auto">
             <h2 class="text-4xl sm:text-6xl md:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap px-2">IRON TIMER</h2>
-            
-            <div class="mt-3 mb-1">
-                <button id="btn-sound-global" onclick="app.toggleSound()" class="btn-sound">
-                    <span class="text-base">🔇</span>
-                    <span id="label-sound-global">SON : OFF</span>
-                </button>
-            </div>
         </div>
         
         <!-- BOUTONS / CASES -->
@@ -272,12 +241,11 @@
         </div>
     </div>
 
-    <!-- MODAL CONFIRMATION RESTART (NOUVEAU) -->
+    <!-- MODAL CONFIRMATION RESTART -->
     <div id="modal-confirm" class="hidden-force absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-8 backdrop-blur-sm">
         <h3 class="text-3xl text-white font-display mb-8 text-center uppercase tracking-widest leading-relaxed">RECOMMENCER<br>LA SÉANCE ?</h3>
         <div class="flex gap-4 w-full max-w-xs">
             <button onclick="app.closeModal()" class="btn-tactical flex-1 py-5 bg-gray-800 text-white border-gray-600 rounded text-xl">NON</button>
-            <!-- Bouton OUI qui déclenche le son directement -->
             <button onclick="app.confirmRestart()" class="btn-tactical flex-1 py-5 bg-[var(--color-volt)] text-black border-none rounded text-xl shadow-[0_0_20px_rgba(204,255,0,0.4)]">OUI</button>
         </div>
     </div>
@@ -343,7 +311,7 @@
         const AudioEngine = {
             ctx: null,
             init: function() {
-                if (!app.state.soundEnabled) return;
+                // Son activé par défaut (suppression check soundEnabled)
                 if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
                 if (this.ctx.state === 'suspended') { this.ctx.resume(); }
                 try {
@@ -357,7 +325,7 @@
                 } catch(e){}
             },
             playBell: function(freq, type='sawtooth', duration=1.5, vol=1.0) { 
-                if (!app.state.soundEnabled || !this.ctx) return;
+                if (!this.ctx) return;
                 try {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
@@ -421,7 +389,7 @@
         };
 
         const app = {
-            state: { currentScreen: 'screen-disclaimer', mode: null, config: {}, running: false, paused: false, phase: 'ready', timeLeft: 0, totalTime: 0, currentSet: 1, intervalId: null, elapsedTime: 0, laps: [], lafayAction: null, soundEnabled: false },
+            state: { currentScreen: 'screen-disclaimer', mode: null, config: {}, running: false, paused: false, phase: 'ready', timeLeft: 0, totalTime: 0, currentSet: 1, intervalId: null, elapsedTime: 0, laps: [], lafayAction: null },
             showScreen: function(screenId) {
                 document.querySelectorAll('body > div').forEach(el => {
                     if(el.id !== 'ios-audio-hack' && !el.classList.contains('copyright-footer-fixed') && el.id !== 'orientation-lock-screen') el.classList.add('hidden-force');
@@ -429,21 +397,9 @@
                 document.getElementById(screenId).classList.remove('hidden-force');
                 this.state.currentScreen = screenId;
             },
-            toggleSound: function() {
-                this.state.soundEnabled = !this.state.soundEnabled;
-                const btn = document.getElementById('btn-sound-global');
-                if (this.state.soundEnabled) {
-                    btn.classList.add('active');
-                    btn.innerHTML = '<span class="text-base">🔊</span><span id="label-sound-global">SON : ON</span>';
-                    AudioEngine.init(); 
-                    AudioEngine.playBell(1500, 'sine', 0.1, 0.5); 
-                } else {
-                    btn.classList.remove('active');
-                    btn.innerHTML = '<span class="text-base">🔇</span><span id="label-sound-global">SON : OFF</span>';
-                }
-            },
             acceptDisclaimer: function() {
                 localStorage.setItem('iron-timer-accepted', 'true');
+                AudioEngine.init();
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen().then(() => {
                         if (screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(e => console.log('Lock failed', e));
@@ -513,7 +469,7 @@
                 document.getElementById(`conf-${key}`).innerText = newVal;
             },
             startWorkout: function() {
-                if(this.state.soundEnabled) AudioEngine.init();
+                AudioEngine.init();
                 WakeLock.request();
                 this.state.currentSet = 1;
                 this.state.paused = false;
@@ -573,10 +529,7 @@
                     else this.setPhase('get_ready');
                 }
             },
-            
-            // --- NOUVELLE GESTION DU REDEMARRAGE PAR MODAL (POUR LE SON) ---
             restartWorkout: function() {
-                // Au lieu du confirm() natif qui bloque l'audio, on affiche notre modal
                 document.getElementById('modal-confirm').classList.remove('hidden-force');
             },
             closeModal: function() {
@@ -584,14 +537,10 @@
             },
             confirmRestart: function() {
                 this.closeModal();
-                // Ici on est dans une pile d'appel directe d'un clic bouton (OUI)
-                // Donc l'AudioContext a le droit de se réveiller 100% sûr.
                 AudioEngine.init(); 
                 this.stopTimerLoop();
                 this.startWorkout();
             },
-            // ---------------------------------------------------------------
-
             toggleRun: function() {
                 const btn = document.getElementById('btn-stop-run');
                 if (!this.state.running) {
@@ -629,19 +578,33 @@
             setPhase: function(phase) {
                 const barLeft = document.getElementById('visual-bar-left');
                 const barRight = document.getElementById('visual-bar-right');
+                
+                // MODIF YONI: Reset standard transitions
                 barLeft.style.transition = 'none';
                 barRight.style.transition = 'none';
+                
+                // --- GESTION COULEUR MAUVE ZEN ---
                 if (this.state.mode === 'coherence') {
-                    if (phase === 'work') { barLeft.style.height = '0%'; barRight.style.height = '0%'; } 
-                    else if (phase === 'rest') { barLeft.style.height = '100%'; barRight.style.height = '100%'; }
+                    // Force la couleur mauve pour tout le mode cohérence
+                    barLeft.style.backgroundColor = '#c084fc';
+                    barRight.style.backgroundColor = '#c084fc';
+                    
+                    if (phase === 'work') { 
+                        barLeft.style.height = '0%'; barRight.style.height = '0%'; 
+                    } else if (phase === 'rest') { 
+                        barLeft.style.height = '100%'; barRight.style.height = '100%'; 
+                    }
                 } else {
                     barLeft.style.height = '100%'; barRight.style.height = '100%';
                 }
-                barLeft.offsetHeight; 
+                
+                barLeft.offsetHeight; // Force reflow
+                
                 if (this.state.mode !== 'coherence') {
                     barLeft.style.transition = 'height 1s linear';
                     barRight.style.transition = 'height 1s linear';
                 }
+
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
                 if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
@@ -772,96 +735,6 @@
                 }
                 this.updateUI();
             },
-            handleLafayRest: function(type) {
-                if (type === 'reps') {
-                    this.state.config.rest = this.state.config.rest_reps;
-                    this.state.lafayAction = 'next_rep'; 
-                } else if (type === 'short') {
-                    this.state.config.rest = this.state.config.rest_short;
-                    this.state.lafayAction = 'reset_series'; 
-                } else {
-                    this.state.config.rest = this.state.config.rest_long;
-                    this.state.lafayAction = 'reset_series'; 
-                }
-                this.nextPhase();
-            },
-            runTimer: function() {
-                this.stopTimerLoop();
-                this.state.running = true;
-                this.updateTimerDisplay();
-                this.state.intervalId = setInterval(() => {
-                    if (this.state.paused) return;
-                    if (this.state.phase === 'finished') { this.stopTimerLoop(); return; }
-                    this.state.timeLeft--;
-                    if (this.state.timeLeft === 0) {
-                         this.nextPhase();
-                    } else {
-                        if (this.state.mode === 'boxing' || this.state.mode === 'tabata') {
-                            if ((this.state.phase === 'get_ready' || this.state.phase === 'rest') && this.state.timeLeft <= 5 && this.state.timeLeft > 0) {
-                                AudioEngine.beepCountdown();
-                            }
-                        }
-                        this.updateTimerDisplay();
-                    }
-                }, 1000);
-            },
-            stopTimerLoop: function() {
-                if (this.state.intervalId) { clearInterval(this.state.intervalId); this.state.intervalId = null; }
-                this.state.running = false;
-                document.body.classList.remove('animate-alert');
-            },
-            nextPhase: function() {
-                const conf = this.state.config;
-                if (this.state.phase === 'get_ready') {
-                    if (conf.type === 'manual') this.setPhase('manual_work');
-                    else this.setPhase('work');
-                } else if (this.state.phase === 'work') {
-                    if (conf.hold > 0) this.setPhase('hold');
-                    else this.setPhase('rest');
-                } else if (this.state.phase === 'hold') {
-                    this.setPhase('rest');
-                } else if (this.state.phase === 'manual_work') this.setPhase('rest');
-                else if (this.state.phase === 'rest') {
-                    if(this.state.mode === 'lafay') {
-                        if(this.state.lafayAction === 'reset_series') {
-                            this.state.currentSet = 1; 
-                            this.setPhase('manual_work');
-                        } else {
-                            if (this.state.currentSet < conf.sets) {
-                                this.state.currentSet++;
-                                this.setPhase('manual_work');
-                            } else {
-                                this.setPhase('finished');
-                            }
-                        }
-                        this.state.lafayAction = null; 
-                    } else {
-                        if (this.state.currentSet < conf.sets) {
-                            this.state.currentSet++;
-                            if (conf.type === 'manual') this.setPhase('manual_work');
-                            else this.setPhase('work');
-                        } else this.setPhase('finished');
-                    }
-                }
-            },
-            handleAction: function() { if (this.state.phase === 'manual_work') this.nextPhase(); },
-            togglePause: function() {
-                this.state.paused = !this.state.paused;
-                const btn = document.getElementById('btn-pause-toggle');
-                if(btn) {
-                    btn.innerText = this.state.paused ? "REPRENDRE" : "PAUSE";
-                    btn.classList.toggle('bg-yellow-600');
-                }
-            },
-            quitWorkout: function() {
-                let msg = "Arrêter l'entraînement et revenir au menu ?";
-                if(this.state.mode === 'running') msg = "Avez-vous fait une capture d'écran de vos temps ? \n\nConfirmez pour quitter.";
-                if(confirm(msg)) {
-                    this.stopTimerLoop();
-                    WakeLock.release();
-                    this.showScreen('screen-menu');
-                }
-            },
             updateTimerDisplay: function() {
                 if (this.state.phase === 'finished') return;
                 const display = document.getElementById('timer-display');
@@ -879,7 +752,9 @@
                 if (this.state.totalTime > 0) {
                     const percentage = (this.state.timeLeft / this.state.totalTime) * 100;
                     let barColor;
-                    if (this.state.mode === 'coherence') {} 
+                    if (this.state.mode === 'coherence') {
+                        // COULEUR GÉRÉE DANS setPhase()
+                    } 
                     else {
                         if (this.state.phase === 'rest') barColor = 'var(--color-alert)';
                         else if (this.state.phase === 'hold') barColor = 'white';

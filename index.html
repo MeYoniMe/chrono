@@ -209,10 +209,11 @@
     <div id="screen-menu" class="w-full h-full flex flex-col p-4 hidden-force pt-8">
         
         <!-- HEADER: AGRANDI ET ALIGNÉ SUR LES CASES -->
-        <div class="flex flex-col items-center mb-6 mt-4 w-full max-w-md mx-auto">
-            <h2 class="text-6xl md:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full">IRON TIMER</h2>
+        <div class="flex flex-col items-center mb-4 mt-2 w-full max-w-md mx-auto">
+            <!-- MODIF YONI: Taille ajustée (text-4xl start) pour garantir une seule ligne sur mobile -->
+            <h2 class="text-4xl sm:text-6xl md:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap px-2">IRON TIMER</h2>
             
-            <div class="mt-4 mb-2">
+            <div class="mt-3 mb-1">
                 <button id="btn-sound-global" onclick="app.toggleSound()" class="btn-sound active">
                     <span class="text-base">🔊</span>
                     <span id="label-sound-global">SON : ON</span>

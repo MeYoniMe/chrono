@@ -147,6 +147,7 @@
         <p class="text-gray-400 text-sm px-8">Tournez votre appareil.</p>
     </div>
 
+    <!-- AUDIO HACK : VRAI FICHIER MP3 SILENCIEUX (Base64 Valide) -->
     <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;">
         <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTSVMAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM//OEAAAAAAAAAAAAAAAAAAAAAAAAMTAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAAMTAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="audio/mpeg">
     </audio>
@@ -183,7 +184,7 @@
     <!-- MENU PRINCIPAL -->
     <div id="screen-menu" class="w-full h-full flex flex-col p-4 hidden-force pt-12">
         
-        <!-- HEADER AVEC TITRE GEANT ET SOUS-TITRE RETABLI -->
+        <!-- HEADER AVEC TITRE GEANT ET SOUS-TITRE -->
         <div class="flex flex-col items-center mb-8 mt-2 w-full max-w-md mx-auto">
             <h2 class="text-[13vw] sm:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap">IRON TIMER</h2>
             <div class="text-[10px] text-gray-500 tracking-[0.6em] mt-1 font-bold">TACTICAL TRAINING</div>
@@ -492,6 +493,15 @@
                 this.state.elapsedTime = 0;
                 this.state.laps = [];
                 this.state.lafayAction = null; 
+                
+                // MODIF YONI: Reset explicite des couleurs au démarrage pour éviter le "mauve fantôme"
+                const timerDisp = document.getElementById('timer-display');
+                timerDisp.classList.remove('text-neon-zen', 'text-neon-alert');
+                timerDisp.classList.add('text-neon-volt'); // Couleur par défaut
+                
+                const phaseLabel = document.getElementById('timer-phase-label');
+                phaseLabel.classList.remove('text-neon-zen');
+                
                 document.getElementById('laps-container').classList.add('hidden-force');
                 document.getElementById('laps-container').innerHTML = '';
                 document.getElementById('timer-round-counter').classList.remove('hidden-force');
@@ -506,17 +516,27 @@
                 }
                 this.showScreen('screen-timer');
                 if (this.state.config.type === 'stopwatch') {
+                    // MODE COURSE
                     this.state.running = false; 
-                    document.getElementById('timer-phase-label').innerText = "CHRONO";
+                    
+                    // MODIF YONI: Couleur label CHRONO
+                    const labelChrono = document.getElementById('timer-phase-label');
+                    labelChrono.innerText = "CHRONO";
+                    labelChrono.classList.remove('text-neon-volt', 'text-neon-zen', 'text-neon-alert');
+                    labelChrono.classList.add('text-gray-400'); // Gris neutre ou blanc
+                    
                     document.getElementById('timer-round-counter').classList.add('hidden-force');
                     document.getElementById('reps-visualizer').classList.add('hidden-force');
                     document.getElementById('btn-restart').classList.add('hidden-force'); 
                     document.getElementById('sidebar-left-container').classList.add('hidden-force');
                     document.getElementById('sidebar-right-container').classList.add('hidden-force');
-                    const timerDisp = document.getElementById('timer-display');
+                    
+                    // Force couleur timer
                     timerDisp.innerText = "0.0";
                     timerDisp.style.fontSize = "40vw"; 
+                    timerDisp.classList.remove('text-neon-zen', 'text-neon-alert');
                     timerDisp.classList.add('text-neon-volt'); 
+                    
                     document.getElementById('timer-sub-display').innerText = "SECONDES";
                     document.getElementById('controls-standard').classList.add('hidden-force');
                     document.getElementById('main-action-btn').classList.add('hidden-force');
@@ -531,8 +551,7 @@
                 else {
                     document.getElementById('sidebar-left-container').classList.remove('hidden-force');
                     document.getElementById('sidebar-right-container').classList.remove('hidden-force');
-                    const timerDisp = document.getElementById('timer-display');
-                    timerDisp.classList.remove('text-neon-volt'); 
+                    // Reset taille font
                     timerDisp.style.fontSize = ""; 
                     this.setupVisualizer();
                     document.getElementById('controls-standard').classList.remove('hidden-force');
@@ -598,7 +617,6 @@
                 barLeft.style.transition = 'none';
                 barRight.style.transition = 'none';
                 
-                // --- GESTION COULEUR MAUVE ZEN ---
                 if (this.state.mode === 'coherence') {
                     const zenColor = '#C4B5FD'; 
                     barLeft.style.backgroundColor = zenColor;
@@ -609,7 +627,6 @@
                     } else if (phase === 'rest') { 
                         barLeft.style.height = '100%'; barRight.style.height = '100%'; 
                     } else {
-                        // Pour get_ready et hold
                         barLeft.style.height = '100%'; barRight.style.height = '100%';
                     }
                 } else {
@@ -627,13 +644,18 @@
                     
                     // MODIF YONI: Force la couleur texte aussi
                     const display = document.getElementById('timer-display');
-                    display.classList.remove('text-neon-zen');
+                    display.classList.remove('text-neon-zen'); // Nettoyage mauve
+                    
                     if (phase === 'rest') {
                         display.classList.add('text-neon-alert');
                         display.classList.remove('text-neon-volt');
                     } else {
-                        display.classList.add('text-neon-volt');
-                        display.classList.remove('text-neon-alert');
+                        // Par défaut, volt (jaune) sauf si get_ready (blanc parfois)
+                        if(phase === 'get_ready') display.classList.remove('text-neon-alert', 'text-neon-volt', 'text-neon-zen');
+                        else {
+                            display.classList.add('text-neon-volt');
+                            display.classList.remove('text-neon-alert');
+                        }
                     }
                 }
                 
@@ -647,6 +669,7 @@
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
                 if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
+
                 this.state.phase = phase;
                 const phaseLabel = document.getElementById('timer-phase-label');
                 const mainBtn = document.getElementById('main-action-btn');
@@ -654,15 +677,26 @@
                 const stdControls = document.getElementById('controls-standard');
                 const display = document.getElementById('timer-display');
                 const subDisplay = document.getElementById('timer-sub-display');
+                
                 document.body.style.backgroundColor = '#000';
                 display.className = "font-display text-[32vw] leading-none tabular-nums text-center drop-shadow-2xl";
-                display.classList.remove('text-white', 'text-neon-volt', 'text-neon-alert', 'text-neon-zen'); 
+                
+                // Nettoyage complet classes couleurs display ici aussi
+                if(this.state.mode !== 'coherence') {
+                     display.classList.remove('text-neon-zen');
+                }
+
                 const zenColorClass = (this.state.mode === 'coherence') ? 'text-neon-zen' : 'text-white';
+                
                 if (phase === 'get_ready') {
                     this.state.timeLeft = 10; 
                     this.state.totalTime = 10;
-                    phaseLabel.innerText = "PRÉPAREZ-VOUS"; phaseLabel.className = "text-3xl font-bold uppercase text-blue-400";
-                    display.classList.add(zenColorClass);
+                    phaseLabel.innerText = "PRÉPAREZ-VOUS"; 
+                    phaseLabel.className = "text-3xl font-bold uppercase text-blue-400";
+                    
+                    display.classList.add(zenColorClass); // Blanc ou Zen
+                    if(this.state.mode !== 'coherence') display.classList.add('text-white');
+
                     subDisplay.innerText = "ATTENTION";
                     mainBtn.classList.add('hidden-force'); 
                     lafayBtns.classList.add('hidden-force');
@@ -673,29 +707,38 @@
                 else if (phase === 'work') {
                     this.state.timeLeft = this.state.config.work; this.state.totalTime = this.state.config.work;
                     if(this.state.mode === 'coherence') {
-                        phaseLabel.innerText = "INSPIRER"; subDisplay.innerText = "INSPIRER";
+                        phaseLabel.innerText = "INSPIRER"; 
+                        subDisplay.innerText = "INSPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-zen";
                         display.classList.add('text-neon-zen');
                         AudioEngine.zenInhale();
+                        
                         barLeft.style.transition = `height ${this.state.totalTime}s linear`;
                         barRight.style.transition = `height ${this.state.totalTime}s linear`;
-                        setTimeout(() => { barLeft.style.height = '100%'; barRight.style.height = '100%'; }, 50);
-                    } else {
+                        setTimeout(() => { 
+                            barLeft.style.height = '100%';
+                            barRight.style.height = '100%';
+                        }, 50);
+                    } 
+                    else {
                         if (this.state.mode === 'boxing') {
                             phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
                             subDisplay.innerText = "FIGHT";
                             AudioEngine.beepTripleStart(); 
-                        } else if (this.state.mode === 'tabata') {
+                        }
+                        else if (this.state.mode === 'tabata') {
                             phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
                             subDisplay.innerText = "GO !";
                             AudioEngine.beepTabataStart(); 
-                        } else {
+                        }
+                        else {
                             phaseLabel.innerText = "EFFORT"; phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
                             subDisplay.innerText = "GO !";
                             AudioEngine.beepHigh(); 
                         }
                         display.classList.add('text-neon-volt'); 
                     }
+                    
                     mainBtn.classList.add('hidden-force');
                     lafayBtns.classList.add('hidden-force'); 
                     stdControls.classList.remove('hidden-force');
@@ -704,6 +747,7 @@
                 else if (phase === 'hold') {
                     this.state.timeLeft = this.state.config.hold; this.state.totalTime = this.state.config.hold;
                     phaseLabel.innerText = "MAINTENIR"; 
+                    
                     if(this.state.mode === 'coherence') {
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-zen";
                         display.classList.add('text-neon-zen');
@@ -716,6 +760,7 @@
                         display.classList.add('text-white');
                         subDisplay.innerText = "BLOCAGE";
                     }
+
                     mainBtn.classList.add('hidden-force'); 
                     lafayBtns.classList.add('hidden-force');
                     stdControls.classList.remove('hidden-force');
@@ -726,6 +771,7 @@
                     phaseLabel.innerText = "EFFORT"; 
                     phaseLabel.className = "text-3xl font-bold uppercase text-neon-volt";
                     display.innerText = "GO"; display.classList.add('text-neon-volt'); subDisplay.innerText = "FAITES VOS REPS";
+                    
                     if (this.state.mode === 'lafay') {
                         mainBtn.classList.add('hidden-force');
                         lafayBtns.classList.remove('hidden-force');
@@ -735,27 +781,35 @@
                         mainBtn.classList.remove('hidden-force');
                         lafayBtns.classList.add('hidden-force');
                     }
+                    
                     stdControls.classList.add('hidden-force');
                     AudioEngine.beepHigh(); this.stopTimerLoop();
                 }
                 else if (phase === 'rest') {
                     this.state.timeLeft = this.state.config.rest; this.state.totalTime = this.state.config.rest;
                     if(this.state.mode === 'coherence') {
-                        phaseLabel.innerText = "EXPIRER"; subDisplay.innerText = "EXPIRER";
+                        phaseLabel.innerText = "EXPIRER"; 
+                        subDisplay.innerText = "EXPIRER";
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-zen";
                         display.classList.add('text-neon-zen');
                         AudioEngine.zenExhale(); 
+                        
                         barLeft.style.transition = `height ${this.state.totalTime}s linear`;
                         barRight.style.transition = `height ${this.state.totalTime}s linear`;
-                        setTimeout(() => { barLeft.style.height = '0%'; barRight.style.height = '0%'; }, 50);
+                        setTimeout(() => {
+                            barLeft.style.height = '0%';
+                            barRight.style.height = '0%';
+                        }, 50);
                     } else {
                         phaseLabel.innerText = "RÉCUP."; 
                         phaseLabel.className = "text-3xl font-bold uppercase text-neon-alert";
                         subDisplay.innerText = "RÉCUP.";
                         display.classList.add('text-neon-alert'); 
-                        if(this.state.mode === 'boxing') AudioEngine.beepRoundEnd(); 
+                        
+                        if(this.state.mode === 'boxing') AudioEngine.beepRoundEnd(); // SON CLOCHE BOXE
                         else AudioEngine.buzzer(); 
                     }
+                    
                     mainBtn.classList.add('hidden-force'); 
                     lafayBtns.classList.add('hidden-force');
                     stdControls.classList.remove('hidden-force');
@@ -766,8 +820,13 @@
                     phaseLabel.innerText = "TERMINÉ"; display.innerText = "FIN"; 
                     display.classList.add(this.state.mode === 'coherence' ? 'text-neon-zen' : 'text-white');
                     subDisplay.innerText = "BRAVO";
-                    if(this.state.mode === 'boxing') AudioEngine.beepEndFight(); 
-                    else AudioEngine.playBell(600, 'square', 0.5, 0.5); 
+                    
+                    if(this.state.mode === 'boxing') {
+                        AudioEngine.beepEndFight(); 
+                    } else {
+                        AudioEngine.playBell(600, 'square', 0.5, 0.5); 
+                    }
+                    
                     document.body.classList.remove('animate-alert');
                     this.stopTimerLoop(); 
                     WakeLock.release();

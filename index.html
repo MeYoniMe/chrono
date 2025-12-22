@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
-<!-- © 2025 Yoni - All rights reserved -->    
+<!-- © 2026 Yoni - All rights reserved -->    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>IRON TIMER - Tactical Training</title>
     <meta name="description" content="Application de chronométrage sportif haute visibilité.">
+    
+    <!-- CONFIGURATION ICONE (MODIFICATION YONI) -->
+    <!-- Ces liens cherchent le fichier ICONE.png à la racine (même dossier que index.html) -->
+    <link rel="icon" type="image/png" href="ICONE.png">
+    <link rel="apple-touch-icon" href="ICONE.png">
+
     <!-- Configuration iOS Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -637,6 +643,10 @@
             },
 
             restartWorkout: function() {
+                // MODIF YONI: Force l'activation audio immédiatement sur le clic
+                // Ceci assure que le contexte audio est réveillé avant même que le popup de confirmation n'apparaisse
+                AudioEngine.init();
+
                 if(confirm("Recommencer la séance depuis le début ?")) {
                     this.stopTimerLoop();
                     this.startWorkout();

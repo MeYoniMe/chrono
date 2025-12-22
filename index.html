@@ -213,7 +213,6 @@
             <h2 class="text-4xl sm:text-6xl md:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap px-2">IRON TIMER</h2>
             
             <div class="mt-3 mb-1">
-                <!-- Bouton SON: OFF par défaut -->
                 <button id="btn-sound-global" onclick="app.toggleSound()" class="btn-sound">
                     <span class="text-base">🔇</span>
                     <span id="label-sound-global">SON : OFF</span>
@@ -270,6 +269,16 @@
         <div id="setup-controls" class="space-y-2 mb-2 shrink-0"></div>
         <div class="mt-4 w-full pt-2">
             <button onclick="app.startWorkout()" class="btn-tactical btn-action w-full py-5 text-4xl rounded-sm font-display tracking-widest text-black transform active:scale-95 transition-transform shadow-lg">GO !</button>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMATION RESTART (NOUVEAU) -->
+    <div id="modal-confirm" class="hidden-force absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-8 backdrop-blur-sm">
+        <h3 class="text-3xl text-white font-display mb-8 text-center uppercase tracking-widest leading-relaxed">RECOMMENCER<br>LA SÉANCE ?</h3>
+        <div class="flex gap-4 w-full max-w-xs">
+            <button onclick="app.closeModal()" class="btn-tactical flex-1 py-5 bg-gray-800 text-white border-gray-600 rounded text-xl">NON</button>
+            <!-- Bouton OUI qui déclenche le son directement -->
+            <button onclick="app.confirmRestart()" class="btn-tactical flex-1 py-5 bg-[var(--color-volt)] text-black border-none rounded text-xl shadow-[0_0_20px_rgba(204,255,0,0.4)]">OUI</button>
         </div>
     </div>
 
@@ -412,7 +421,6 @@
         };
 
         const app = {
-            // Changement ici: soundEnabled: false
             state: { currentScreen: 'screen-disclaimer', mode: null, config: {}, running: false, paused: false, phase: 'ready', timeLeft: 0, totalTime: 0, currentSet: 1, intervalId: null, elapsedTime: 0, laps: [], lafayAction: null, soundEnabled: false },
             showScreen: function(screenId) {
                 document.querySelectorAll('body > div').forEach(el => {
@@ -565,14 +573,25 @@
                     else this.setPhase('get_ready');
                 }
             },
+            
+            // --- NOUVELLE GESTION DU REDEMARRAGE PAR MODAL (POUR LE SON) ---
             restartWorkout: function() {
-                // MODIF YONI: Sécurité audio renforcée
-                if(this.state.soundEnabled) AudioEngine.init();
-                if(confirm("Recommencer la séance depuis le début ?")) {
-                    this.stopTimerLoop();
-                    this.startWorkout();
-                }
+                // Au lieu du confirm() natif qui bloque l'audio, on affiche notre modal
+                document.getElementById('modal-confirm').classList.remove('hidden-force');
             },
+            closeModal: function() {
+                document.getElementById('modal-confirm').classList.add('hidden-force');
+            },
+            confirmRestart: function() {
+                this.closeModal();
+                // Ici on est dans une pile d'appel directe d'un clic bouton (OUI)
+                // Donc l'AudioContext a le droit de se réveiller 100% sûr.
+                AudioEngine.init(); 
+                this.stopTimerLoop();
+                this.startWorkout();
+            },
+            // ---------------------------------------------------------------
+
             toggleRun: function() {
                 const btn = document.getElementById('btn-stop-run');
                 if (!this.state.running) {

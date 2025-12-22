@@ -186,7 +186,8 @@
         
         <!-- HEADER -->
         <div class="flex flex-col items-center mb-6 mt-4 w-full max-w-md mx-auto">
-            <h2 class="text-4xl sm:text-6xl md:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap px-2">IRON TIMER</h2>
+            <!-- MODIFICATION YONI: Taille en 'vw' (viewport width) pour être énorme sur mobile -->
+            <h2 class="text-[11vw] sm:text-6xl md:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap px-0">IRON TIMER</h2>
         </div>
         
         <!-- BOUTONS / CASES -->
@@ -736,96 +737,6 @@
                     WakeLock.release();
                 }
                 this.updateUI();
-            },
-            handleLafayRest: function(type) {
-                if (type === 'reps') {
-                    this.state.config.rest = this.state.config.rest_reps;
-                    this.state.lafayAction = 'next_rep'; 
-                } else if (type === 'short') {
-                    this.state.config.rest = this.state.config.rest_short;
-                    this.state.lafayAction = 'reset_series'; 
-                } else {
-                    this.state.config.rest = this.state.config.rest_long;
-                    this.state.lafayAction = 'reset_series'; 
-                }
-                this.nextPhase();
-            },
-            runTimer: function() {
-                this.stopTimerLoop();
-                this.state.running = true;
-                this.updateTimerDisplay();
-                this.state.intervalId = setInterval(() => {
-                    if (this.state.paused) return;
-                    if (this.state.phase === 'finished') { this.stopTimerLoop(); return; }
-                    this.state.timeLeft--;
-                    if (this.state.timeLeft === 0) {
-                         this.nextPhase();
-                    } else {
-                        if (this.state.mode === 'boxing' || this.state.mode === 'tabata') {
-                            if ((this.state.phase === 'get_ready' || this.state.phase === 'rest') && this.state.timeLeft <= 5 && this.state.timeLeft > 0) {
-                                AudioEngine.beepCountdown();
-                            }
-                        }
-                        this.updateTimerDisplay();
-                    }
-                }, 1000);
-            },
-            stopTimerLoop: function() {
-                if (this.state.intervalId) { clearInterval(this.state.intervalId); this.state.intervalId = null; }
-                this.state.running = false;
-                document.body.classList.remove('animate-alert');
-            },
-            nextPhase: function() {
-                const conf = this.state.config;
-                if (this.state.phase === 'get_ready') {
-                    if (conf.type === 'manual') this.setPhase('manual_work');
-                    else this.setPhase('work');
-                } else if (this.state.phase === 'work') {
-                    if (conf.hold > 0) this.setPhase('hold');
-                    else this.setPhase('rest');
-                } else if (this.state.phase === 'hold') {
-                    this.setPhase('rest');
-                } else if (this.state.phase === 'manual_work') this.setPhase('rest');
-                else if (this.state.phase === 'rest') {
-                    if(this.state.mode === 'lafay') {
-                        if(this.state.lafayAction === 'reset_series') {
-                            this.state.currentSet = 1; 
-                            this.setPhase('manual_work');
-                        } else {
-                            if (this.state.currentSet < conf.sets) {
-                                this.state.currentSet++;
-                                this.setPhase('manual_work');
-                            } else {
-                                this.setPhase('finished');
-                            }
-                        }
-                        this.state.lafayAction = null; 
-                    } else {
-                        if (this.state.currentSet < conf.sets) {
-                            this.state.currentSet++;
-                            if (conf.type === 'manual') this.setPhase('manual_work');
-                            else this.setPhase('work');
-                        } else this.setPhase('finished');
-                    }
-                }
-            },
-            handleAction: function() { if (this.state.phase === 'manual_work') this.nextPhase(); },
-            togglePause: function() {
-                this.state.paused = !this.state.paused;
-                const btn = document.getElementById('btn-pause-toggle');
-                if(btn) {
-                    btn.innerText = this.state.paused ? "REPRENDRE" : "PAUSE";
-                    btn.classList.toggle('bg-yellow-600');
-                }
-            },
-            quitWorkout: function() {
-                let msg = "Arrêter l'entraînement et revenir au menu ?";
-                if(this.state.mode === 'running') msg = "Avez-vous fait une capture d'écran de vos temps ? \n\nConfirmez pour quitter.";
-                if(confirm(msg)) {
-                    this.stopTimerLoop();
-                    WakeLock.release();
-                    this.showScreen('screen-menu');
-                }
             },
             updateTimerDisplay: function() {
                 if (this.state.phase === 'finished') return;

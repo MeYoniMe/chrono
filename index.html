@@ -147,9 +147,9 @@
         <p class="text-gray-400 text-sm px-8">Tournez votre appareil.</p>
     </div>
 
-    <!-- AUDIO HACK : FICHIER MP3 SILENCIEUX CORRECT -->
-    <!-- Utilisation d'un fichier src vide pour éviter l'erreur de chargement au démarrage, on le remplit dynamiquement ou on utilise Web Audio API -->
-    <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;"></audio>
+    <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;">
+        <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTSVMAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM//OEAAAAAAAAAAAAAAAAAAAAAAAAMTAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAAMTAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="audio/mpeg">
+    </audio>
 
     <!-- DISCLAIMER -->
     <div id="screen-disclaimer" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center">
@@ -185,7 +185,6 @@
         
         <!-- HEADER AVEC TITRE GEANT ET SOUS-TITRE RETABLI -->
         <div class="flex flex-col items-center mb-8 mt-2 w-full max-w-md mx-auto">
-            <!-- TITRE RESPONSIVE : 13vw permet d'être très large sur mobile -->
             <h2 class="text-[13vw] sm:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap">IRON TIMER</h2>
             <div class="text-[10px] text-gray-500 tracking-[0.6em] mt-1 font-bold">TACTICAL TRAINING</div>
         </div>
@@ -227,7 +226,7 @@
     <!-- REGLAGES -->
     <div id="screen-setup" class="w-full h-full flex flex-col p-3 hidden-force pt-10 max-w-md mx-auto pb-2 overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
-            <button onclick="app.showScreen('screen-menu')" class="text-gray-400 text-xs font-bold border border-gray-600 w-10 h-10 flex items-center justify-center rounded active:bg-gray-800"><</button>
+            <button onclick="AudioEngine.init(); app.showScreen('screen-menu')" class="text-gray-400 text-xs font-bold border border-gray-600 w-10 h-10 flex items-center justify-center rounded active:bg-gray-800"><</button>
             <h2 id="setup-title" class="text-xl font-display text-white text-right truncate ml-2">REGLAGES</h2>
         </div>
         <div class="bg-gray-900/80 p-3 rounded border border-gray-700 mb-2 shadow-lg shrink-0">
@@ -595,29 +594,56 @@
             setPhase: function(phase) {
                 const barLeft = document.getElementById('visual-bar-left');
                 const barRight = document.getElementById('visual-bar-right');
+                
                 barLeft.style.transition = 'none';
                 barRight.style.transition = 'none';
+                
+                // --- GESTION COULEUR MAUVE ZEN ---
                 if (this.state.mode === 'coherence') {
                     const zenColor = '#C4B5FD'; 
                     barLeft.style.backgroundColor = zenColor;
                     barRight.style.backgroundColor = zenColor;
-                    if (phase === 'work') { barLeft.style.height = '0%'; barRight.style.height = '0%'; } 
-                    else if (phase === 'rest') { barLeft.style.height = '100%'; barRight.style.height = '100%'; }
-                    else { barLeft.style.height = '100%'; barRight.style.height = '100%'; }
+                    
+                    if (phase === 'work') { 
+                        barLeft.style.height = '0%'; barRight.style.height = '0%'; 
+                    } else if (phase === 'rest') { 
+                        barLeft.style.height = '100%'; barRight.style.height = '100%'; 
+                    } else {
+                        // Pour get_ready et hold
+                        barLeft.style.height = '100%'; barRight.style.height = '100%';
+                    }
                 } else {
+                    // RESET POUR MODES STANDARDS
                     barLeft.style.height = '100%'; barRight.style.height = '100%';
+                    
+                    // MODIF YONI: On force la couleur par défaut ici pour nettoyer le mauve
                     let defaultColor = 'var(--color-volt)';
                     if (phase === 'rest') defaultColor = 'var(--color-alert)';
                     else if (phase === 'hold') defaultColor = 'white';
                     else if (phase === 'get_ready') defaultColor = '#fff';
+                    
                     barLeft.style.backgroundColor = defaultColor;
                     barRight.style.backgroundColor = defaultColor;
+                    
+                    // MODIF YONI: Force la couleur texte aussi
+                    const display = document.getElementById('timer-display');
+                    display.classList.remove('text-neon-zen');
+                    if (phase === 'rest') {
+                        display.classList.add('text-neon-alert');
+                        display.classList.remove('text-neon-volt');
+                    } else {
+                        display.classList.add('text-neon-volt');
+                        display.classList.remove('text-neon-alert');
+                    }
                 }
+                
                 barLeft.offsetHeight; 
+                
                 if (this.state.mode !== 'coherence') {
                     barLeft.style.transition = 'height 1s linear';
                     barRight.style.transition = 'height 1s linear';
                 }
+
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
                 if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
@@ -748,6 +774,7 @@
                 }
                 this.updateUI();
             },
+
             handleLafayRest: function(type) {
                 if (type === 'reps') {
                     this.state.config.rest = this.state.config.rest_reps;
@@ -761,17 +788,25 @@
                 }
                 this.nextPhase();
             },
+
             runTimer: function() {
                 this.stopTimerLoop();
                 this.state.running = true;
                 this.updateTimerDisplay();
                 this.state.intervalId = setInterval(() => {
                     if (this.state.paused) return;
-                    if (this.state.phase === 'finished') { this.stopTimerLoop(); return; }
+                    
+                    if (this.state.phase === 'finished') {
+                        this.stopTimerLoop();
+                        return;
+                    }
+
                     this.state.timeLeft--;
+                    
                     if (this.state.timeLeft === 0) {
                          this.nextPhase();
                     } else {
+                        // BIP COMPTE A REBOURS
                         if (this.state.mode === 'boxing' || this.state.mode === 'tabata') {
                             if ((this.state.phase === 'get_ready' || this.state.phase === 'rest') && this.state.timeLeft <= 5 && this.state.timeLeft > 0) {
                                 AudioEngine.beepCountdown();
@@ -781,22 +816,30 @@
                     }
                 }, 1000);
             },
+
             stopTimerLoop: function() {
-                if (this.state.intervalId) { clearInterval(this.state.intervalId); this.state.intervalId = null; }
+                if (this.state.intervalId) {
+                    clearInterval(this.state.intervalId);
+                    this.state.intervalId = null; 
+                }
                 this.state.running = false;
                 document.body.classList.remove('animate-alert');
             },
+
             nextPhase: function() {
                 const conf = this.state.config;
                 if (this.state.phase === 'get_ready') {
                     if (conf.type === 'manual') this.setPhase('manual_work');
                     else this.setPhase('work');
-                } else if (this.state.phase === 'work') {
+                }
+                else if (this.state.phase === 'work') {
                     if (conf.hold > 0) this.setPhase('hold');
                     else this.setPhase('rest');
-                } else if (this.state.phase === 'hold') {
+                }
+                else if (this.state.phase === 'hold') {
                     this.setPhase('rest');
-                } else if (this.state.phase === 'manual_work') this.setPhase('rest');
+                }
+                else if (this.state.phase === 'manual_work') this.setPhase('rest');
                 else if (this.state.phase === 'rest') {
                     if(this.state.mode === 'lafay') {
                         if(this.state.lafayAction === 'reset_series') {
@@ -811,7 +854,8 @@
                             }
                         }
                         this.state.lafayAction = null; 
-                    } else {
+                    }
+                    else {
                         if (this.state.currentSet < conf.sets) {
                             this.state.currentSet++;
                             if (conf.type === 'manual') this.setPhase('manual_work');
@@ -820,6 +864,7 @@
                     }
                 }
             },
+
             handleAction: function() { if (this.state.phase === 'manual_work') this.nextPhase(); },
             togglePause: function() {
                 this.state.paused = !this.state.paused;
@@ -829,17 +874,21 @@
                     btn.classList.toggle('bg-yellow-600');
                 }
             },
+
             quitWorkout: function() {
                 let msg = "Arrêter l'entraînement et revenir au menu ?";
                 if(this.state.mode === 'running') msg = "Avez-vous fait une capture d'écran de vos temps ? \n\nConfirmez pour quitter.";
+                
                 if(confirm(msg)) {
                     this.stopTimerLoop();
                     WakeLock.release();
                     this.showScreen('screen-menu');
                 }
             },
+
             updateTimerDisplay: function() {
                 if (this.state.phase === 'finished') return;
+
                 const display = document.getElementById('timer-display');
                 let timeStr;
                 if (this.state.timeLeft >= 60) {
@@ -852,17 +901,20 @@
                     display.style.fontSize = "32vw"; 
                 }
                 display.innerText = timeStr;
+
                 if (this.state.totalTime > 0) {
                     const percentage = (this.state.timeLeft / this.state.totalTime) * 100;
                     let barColor;
+                    
                     if (this.state.mode === 'coherence') {
-                        // COULEUR GÉRÉE DANS setPhase()
+                       // Pass (CSS handles smooth transition)
                     } 
                     else {
                         if (this.state.phase === 'rest') barColor = 'var(--color-alert)';
                         else if (this.state.phase === 'hold') barColor = 'white';
                         else if (this.state.phase === 'get_ready') barColor = '#fff';
                         else barColor = 'var(--color-volt)';
+
                         document.getElementById('visual-bar-left').style.height = `${percentage}%`;
                         document.getElementById('visual-bar-right').style.height = `${percentage}%`;
                         document.getElementById('visual-bar-left').style.backgroundColor = barColor;
@@ -870,6 +922,7 @@
                     }
                 }
             },
+
             setupVisualizer: function() {
                 const container = document.getElementById('reps-visualizer');
                 container.innerHTML = '';
@@ -882,11 +935,14 @@
                     container.appendChild(box);
                 }
             },
+
             updateUI: function() {
                 const isCompact = this.state.config.sets > 15;
                 const sizeClass = isCompact ? 'w-4 h-4' : 'w-8 h-8';
+                
                 const unit = this.state.config.unit || "SÉRIE";
                 document.getElementById('timer-round-counter').innerText = `${unit} ${this.state.currentSet} / ${this.state.config.sets}`;
+                
                 for(let i=1; i<=this.state.config.sets; i++) {
                     const box = document.getElementById(`rep-box-${i}`);
                     if (i < this.state.currentSet) box.className = `${sizeClass} bg-gray-600 rounded-sm opacity-50`;
@@ -907,4 +963,3 @@
     </script>
 </body>
 </html>
-

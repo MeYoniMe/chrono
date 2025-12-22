@@ -33,7 +33,7 @@
             --color-volt: #CCFF00;
             --color-alert: #FF3333;
             --color-rest: #00C2FF;
-            --color-zen: #C4B5FD; /* Lavande douce pour le calme */
+            --color-zen: #C4B5FD; /* Lavande douce */
             --color-white: #ffffff;
             --font-tactical: 'Chakra Petch', sans-serif;
             --font-display: 'Black Ops One', cursive;
@@ -147,10 +147,9 @@
         <p class="text-gray-400 text-sm px-8">Tournez votre appareil.</p>
     </div>
 
-    <!-- AUDIO HACK : VRAI FICHIER MP3 SILENCIEUX (Base64 Valide) -->
-    <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;">
-        <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTSVMAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM//OEAAAAAAAAAAAAAAAAAAAAAAAAMTAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAAMTAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="audio/mpeg">
-    </audio>
+    <!-- AUDIO HACK : FICHIER MP3 SILENCIEUX CORRECT -->
+    <!-- Utilisation d'un fichier src vide pour éviter l'erreur de chargement au démarrage, on le remplit dynamiquement ou on utilise Web Audio API -->
+    <audio id="ios-audio-hack" loop muted playsinline style="width: 1px; height: 1px; opacity: 0;"></audio>
 
     <!-- DISCLAIMER -->
     <div id="screen-disclaimer" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center">
@@ -186,8 +185,8 @@
         
         <!-- HEADER AVEC TITRE GEANT ET SOUS-TITRE RETABLI -->
         <div class="flex flex-col items-center mb-8 mt-2 w-full max-w-md mx-auto">
-            <h2 class="text-[11vw] sm:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap">IRON TIMER</h2>
-            <!-- RETOUR DU SOUS-TITRE ICI -->
+            <!-- TITRE RESPONSIVE : 13vw permet d'être très large sur mobile -->
+            <h2 class="text-[13vw] sm:text-7xl font-display text-white tracking-widest drop-shadow-lg text-center leading-none w-full whitespace-nowrap">IRON TIMER</h2>
             <div class="text-[10px] text-gray-500 tracking-[0.6em] mt-1 font-bold">TACTICAL TRAINING</div>
         </div>
         
@@ -228,7 +227,7 @@
     <!-- REGLAGES -->
     <div id="screen-setup" class="w-full h-full flex flex-col p-3 hidden-force pt-10 max-w-md mx-auto pb-2 overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
-            <button onclick="AudioEngine.init(); app.showScreen('screen-menu')" class="text-gray-400 text-xs font-bold border border-gray-600 w-10 h-10 flex items-center justify-center rounded active:bg-gray-800"><</button>
+            <button onclick="app.showScreen('screen-menu')" class="text-gray-400 text-xs font-bold border border-gray-600 w-10 h-10 flex items-center justify-center rounded active:bg-gray-800"><</button>
             <h2 id="setup-title" class="text-xl font-display text-white text-right truncate ml-2">REGLAGES</h2>
         </div>
         <div class="bg-gray-900/80 p-3 rounded border border-gray-700 mb-2 shadow-lg shrink-0">
@@ -314,9 +313,19 @@
             ctx: null,
             init: function() {
                 try {
-                    if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+                    // Initialisation sécurisée
+                    if (!this.ctx) { 
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        if (AudioContext) {
+                            this.ctx = new AudioContext(); 
+                        } else {
+                            console.warn("AudioContext non supporté");
+                            return;
+                        }
+                    }
                     if (this.ctx.state === 'suspended') { this.ctx.resume(); }
-                    // Moteur audio hack silencieux
+                    
+                    // Oscillateur silencieux pour débloquer l'audio mobile
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     gain.gain.value = 0.001; 
@@ -324,7 +333,9 @@
                     gain.connect(this.ctx.destination);
                     osc.start(0);
                     osc.stop(0.1);
-                } catch(e) { console.error("Audio Init Error", e); }
+                } catch(e) { 
+                    console.error("Erreur init audio (non bloquant):", e); 
+                }
             },
             playBell: function(freq, type='sawtooth', duration=1.5, vol=1.0) { 
                 if (!this.ctx) return;
@@ -376,7 +387,11 @@
                 if ('wakeLock' in navigator) {
                     try { this.lock = await navigator.wakeLock.request('screen'); } catch (err) {}
                 }
-                document.getElementById('ios-audio-hack').play().catch(e=>{});
+                // Try catch pour éviter plantage si fichier audio manquant
+                try {
+                    const audio = document.getElementById('ios-audio-hack');
+                    if(audio) audio.play().catch(e => console.log("Audio hack silent fail"));
+                } catch(e) {}
             },
             release() { if (this.lock) { this.lock.release(); this.lock = null; } }
         };
@@ -401,7 +416,7 @@
             },
             acceptDisclaimer: function() {
                 localStorage.setItem('iron-timer-accepted', 'true');
-                try { AudioEngine.init(); } catch(e){}
+                AudioEngine.init();
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen().then(() => {
                         if (screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(e => console.log('Lock failed', e));
@@ -471,7 +486,7 @@
                 document.getElementById(`conf-${key}`).innerText = newVal;
             },
             startWorkout: function() {
-                try { AudioEngine.init(); } catch(e){}
+                AudioEngine.init(); // Appel sécurisé
                 WakeLock.request();
                 this.state.currentSet = 1;
                 this.state.paused = false;
@@ -539,7 +554,7 @@
             },
             confirmRestart: function() {
                 this.closeModal();
-                try { AudioEngine.init(); } catch(e){}
+                AudioEngine.init(); 
                 this.stopTimerLoop();
                 this.startWorkout();
             },
@@ -580,45 +595,29 @@
             setPhase: function(phase) {
                 const barLeft = document.getElementById('visual-bar-left');
                 const barRight = document.getElementById('visual-bar-right');
-                
                 barLeft.style.transition = 'none';
                 barRight.style.transition = 'none';
-                
-                // --- GESTION COULEUR MAUVE ZEN ---
                 if (this.state.mode === 'coherence') {
                     const zenColor = '#C4B5FD'; 
                     barLeft.style.backgroundColor = zenColor;
                     barRight.style.backgroundColor = zenColor;
-                    
-                    if (phase === 'work') { 
-                        barLeft.style.height = '0%'; barRight.style.height = '0%'; 
-                    } else if (phase === 'rest') { 
-                        barLeft.style.height = '100%'; barRight.style.height = '100%'; 
-                    } else {
-                        // Pour get_ready et hold
-                        barLeft.style.height = '100%'; barRight.style.height = '100%';
-                    }
+                    if (phase === 'work') { barLeft.style.height = '0%'; barRight.style.height = '0%'; } 
+                    else if (phase === 'rest') { barLeft.style.height = '100%'; barRight.style.height = '100%'; }
+                    else { barLeft.style.height = '100%'; barRight.style.height = '100%'; }
                 } else {
-                    // RESET POUR MODES STANDARDS
                     barLeft.style.height = '100%'; barRight.style.height = '100%';
-                    
-                    // MODIF YONI: On force la couleur par défaut ici pour nettoyer le mauve
                     let defaultColor = 'var(--color-volt)';
                     if (phase === 'rest') defaultColor = 'var(--color-alert)';
                     else if (phase === 'hold') defaultColor = 'white';
                     else if (phase === 'get_ready') defaultColor = '#fff';
-                    
                     barLeft.style.backgroundColor = defaultColor;
                     barRight.style.backgroundColor = defaultColor;
                 }
-                
                 barLeft.offsetHeight; 
-                
                 if (this.state.mode !== 'coherence') {
                     barLeft.style.transition = 'height 1s linear';
                     barRight.style.transition = 'height 1s linear';
                 }
-
                 if (phase === 'work' && this.state.config.work === 0) { this.state.phase = 'work'; this.nextPhase(); return; }
                 if (phase === 'hold' && this.state.config.hold === 0) { this.state.phase = 'hold'; this.nextPhase(); return; }
                 if (phase === 'rest' && this.state.config.rest === 0) { this.state.phase = 'rest'; this.nextPhase(); return; }
@@ -748,6 +747,96 @@
                     WakeLock.release();
                 }
                 this.updateUI();
+            },
+            handleLafayRest: function(type) {
+                if (type === 'reps') {
+                    this.state.config.rest = this.state.config.rest_reps;
+                    this.state.lafayAction = 'next_rep'; 
+                } else if (type === 'short') {
+                    this.state.config.rest = this.state.config.rest_short;
+                    this.state.lafayAction = 'reset_series'; 
+                } else {
+                    this.state.config.rest = this.state.config.rest_long;
+                    this.state.lafayAction = 'reset_series'; 
+                }
+                this.nextPhase();
+            },
+            runTimer: function() {
+                this.stopTimerLoop();
+                this.state.running = true;
+                this.updateTimerDisplay();
+                this.state.intervalId = setInterval(() => {
+                    if (this.state.paused) return;
+                    if (this.state.phase === 'finished') { this.stopTimerLoop(); return; }
+                    this.state.timeLeft--;
+                    if (this.state.timeLeft === 0) {
+                         this.nextPhase();
+                    } else {
+                        if (this.state.mode === 'boxing' || this.state.mode === 'tabata') {
+                            if ((this.state.phase === 'get_ready' || this.state.phase === 'rest') && this.state.timeLeft <= 5 && this.state.timeLeft > 0) {
+                                AudioEngine.beepCountdown();
+                            }
+                        }
+                        this.updateTimerDisplay();
+                    }
+                }, 1000);
+            },
+            stopTimerLoop: function() {
+                if (this.state.intervalId) { clearInterval(this.state.intervalId); this.state.intervalId = null; }
+                this.state.running = false;
+                document.body.classList.remove('animate-alert');
+            },
+            nextPhase: function() {
+                const conf = this.state.config;
+                if (this.state.phase === 'get_ready') {
+                    if (conf.type === 'manual') this.setPhase('manual_work');
+                    else this.setPhase('work');
+                } else if (this.state.phase === 'work') {
+                    if (conf.hold > 0) this.setPhase('hold');
+                    else this.setPhase('rest');
+                } else if (this.state.phase === 'hold') {
+                    this.setPhase('rest');
+                } else if (this.state.phase === 'manual_work') this.setPhase('rest');
+                else if (this.state.phase === 'rest') {
+                    if(this.state.mode === 'lafay') {
+                        if(this.state.lafayAction === 'reset_series') {
+                            this.state.currentSet = 1; 
+                            this.setPhase('manual_work');
+                        } else {
+                            if (this.state.currentSet < conf.sets) {
+                                this.state.currentSet++;
+                                this.setPhase('manual_work');
+                            } else {
+                                this.setPhase('finished');
+                            }
+                        }
+                        this.state.lafayAction = null; 
+                    } else {
+                        if (this.state.currentSet < conf.sets) {
+                            this.state.currentSet++;
+                            if (conf.type === 'manual') this.setPhase('manual_work');
+                            else this.setPhase('work');
+                        } else this.setPhase('finished');
+                    }
+                }
+            },
+            handleAction: function() { if (this.state.phase === 'manual_work') this.nextPhase(); },
+            togglePause: function() {
+                this.state.paused = !this.state.paused;
+                const btn = document.getElementById('btn-pause-toggle');
+                if(btn) {
+                    btn.innerText = this.state.paused ? "REPRENDRE" : "PAUSE";
+                    btn.classList.toggle('bg-yellow-600');
+                }
+            },
+            quitWorkout: function() {
+                let msg = "Arrêter l'entraînement et revenir au menu ?";
+                if(this.state.mode === 'running') msg = "Avez-vous fait une capture d'écran de vos temps ? \n\nConfirmez pour quitter.";
+                if(confirm(msg)) {
+                    this.stopTimerLoop();
+                    WakeLock.release();
+                    this.showScreen('screen-menu');
+                }
             },
             updateTimerDisplay: function() {
                 if (this.state.phase === 'finished') return;
